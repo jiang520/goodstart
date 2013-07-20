@@ -8,15 +8,13 @@ from PyQt4 import QtGui
 class MainWindow(QtGui.QMainWindow):
     def __init__(self,parent):
         super(MainWindow, self).__init__(parent)
-        self.resize(1024, 768)
-        self.action_exit = QAction(u"退出程序", self)
-        
-        self.__initToolbarAndMenu()
-       
+        self.resize(1024, 768)        
+        self.__initToolbarAndMenu()       
         self.tableview = QTableView()
         self.tableview.setSelectionBehavior(QAbstractItemView.SelectRows)        
         self.setCentralWidget(self.tableview)
         
+        self.action_about.triggered.connect(self.slotAbout)
         self.action_exit.triggered.connect(self.close)
         self.action_tr.triggered.connect(self.slotGenTransmit)
         self.action_rec.triggered.connect(self.slotGenRec)
@@ -26,6 +24,7 @@ class MainWindow(QtGui.QMainWindow):
         
     def __initToolbarAndMenu(self):
         menubar = self.menuBar()
+        self.action_exit = QAction(u"退出程序", self)
         menufile = menubar.addMenu(u"文件")
         menufile.addAction(self.action_exit)
         menuview = menubar.addMenu(u"视图")
@@ -35,12 +34,30 @@ class MainWindow(QtGui.QMainWindow):
         self.action_showHheader.setCheckable(True)
         menuview.addAction(self.action_showVheader)
         menuview.addAction(self.action_showHheader)
-        menuedit = menubar.addMenu(u"发射接收")
-        menuedit.addAction(QAction("receive",self))
+        self.menuTrRec = menubar.addMenu(u"发射接收")        
         self.menuHv = menubar.addMenu(u"高压开关")
-        self.__initHVSwithMenu()       
+        self.__initTrRecMenu()
+        self.__initHVSwithMenu()   
+        self.action_about = QAction(u"About", self)
+        menubar.addAction(self.action_about)      
         
-        menubar.addAction(self.action_exit)
+        self.__initToolbar0()
+        self.__initToolbar1()
+        self.toobar0.setMinimumHeight(30)
+        
+    def __initToolbar1(self):
+        self.toobar1 = QToolBar("toobar1")
+        self.addToolBar(self.toobar1)
+        self.addToolBar(self.toobar0)
+        self.toobar1.addAction(self.action_exit)
+        self.toobar1.addSeparator()       
+        self.toobar1.addAction(self.action_tr)
+        self.toobar1.addAction(self.action_rec)
+        self.toobar1.addAction(self.action_rec_mov)
+        self.toobar1.addAction(self.action_rec_gl)
+        
+        
+    def __initToolbar0(self):
         self.toobar0 = QToolBar("toobar0",self)
         self.editCell    = QLineEdit(u"80", self)
         self.editSubCell = QLineEdit(u"16", self)
@@ -65,22 +82,16 @@ class MainWindow(QtGui.QMainWindow):
         self.action_showVheader.toggled.connect(self.slotShowRowHeader)
         self.action_showHheader.toggled.connect(self.slotShowColHeader)
         
-        self.toobar1 = QToolBar("toobar1")
-        self.addToolBar(self.toobar1)
-        self.addToolBar(self.toobar0)
-        self.toobar0.setMinimumHeight(30)
-        self.toobar1.addAction(self.action_exit)
-        self.toobar1.addSeparator()
+    def __initTrRecMenu(self):
         self.action_tr = QAction(QString.fromUtf8(u"发射"),self)
         self.action_rec= QAction(QString.fromUtf8(u"接收"),self)
         self.action_rec_mov = QAction(QString.fromUtf8(u"接收移动"),self)
         self.action_rec_gl = QAction(QString.fromUtf8(u"归纳接收"), self)
         
-        
-        self.toobar1.addAction(self.action_tr)
-        self.toobar1.addAction(self.action_rec)
-        self.toobar1.addAction(self.action_rec_mov)
-        self.toobar1.addAction(self.action_rec_gl)
+        self.menuTrRec.addAction(self.action_tr)
+        self.menuTrRec.addAction(self.action_rec)
+        self.menuTrRec.addAction(self.action_rec_mov)
+        self.menuTrRec.addAction(self.action_rec_gl)
         
     def __initHVSwithMenu(self):
         self.action_hv1 = QAction(u"高压开关1",self)
@@ -98,12 +109,14 @@ class MainWindow(QtGui.QMainWindow):
             self.tableview.verticalHeader().show()
         else:
             self.tableview.verticalHeader().hide()
+            
     def slotShowColHeader(self):
         bShow = self.action_showHheader.isChecked()
         if bShow:
             self.tableview.horizontalHeader().show()
         else:
             self.tableview.horizontalHeader().hide()
+            
     def slotCheckConfig(self):
         bLocked = self.checkLock.isChecked()
         self.editCell.setEnabled(not bLocked)
@@ -135,6 +148,9 @@ class MainWindow(QtGui.QMainWindow):
         pass
     def slotGenRec_gl(self):
         pass
+    def slotAbout(self):
+        QMessageBox.about(self, "About pyqtNormal", "this programe is build for us scan ")
+        
     
 if __name__=="__main__":
     app =  QtGui.QApplication(sys.argv)
