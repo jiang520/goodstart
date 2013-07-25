@@ -91,29 +91,29 @@ class DlgRfmasterMain(QMainWindow):
         
     '''查找一个上下的图片文件,把文件名放到listwidget中,'''
     def slotopen(self):
-        #directory = QFileDialog.getExistingDirectory(self, "Find Files", QDir.currentPath())
-        directory = 'd:\\pic'
+        directory = QFileDialog.getExistingDirectory(self, "Find Files", QDir.currentPath())
+        if len(directory) == 0: 
+            directory = 'd:\\pic'
         self.strdir = directory
         self.setWindowTitle(self.strdir)
         import os
         self.listwidget.clear() 
         self.listwidget.setMinimumSize(165, 200)      
         strExt = ['.bmp','.jpg','.png','.gif','.jpeg']
-        for file in os.listdir(directory):
-            if file == '.' or file == '..':
+        for filename in os.listdir(directory):
+            if filename == '.' or filename == '..':
                 continue
             print file
-            if strExt.count(file[-4:]) > 0:
+            if strExt.count(filename[-4:]) > 0:
                 strQt = QString()
-                strQt= QString.fromUtf8(unicode(file))
+                strQt = QString.fromUtf8(unicode(filename))
                 
                 self.listwidget.insertItem(0, QListWidgetItem(strQt))
                 #self.listwidget.insertItem(0, QListWidgetItem(file))
                 
-    def slotGetUrlImage(self):
-        
+    def slotGetUrlImage(self):        
         conn = urllib2.httplib.HTTPConnection('www.baidu.com')
-        str = conn.getresponse()
+        strRes = conn.getresponse()
         print str
     '''
     select the next image

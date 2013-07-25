@@ -6,7 +6,6 @@ Created on 2013-6-6
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 import uiFormImage
-from cocos.path import Path
 class FormImage(QWidget):
     '''
     classdocs
@@ -27,7 +26,7 @@ class FormImage(QWidget):
         #print 'load file at path:',path
         self.img = QImage(QString.fromUtf8(unicode(path)))
         if self.img == None or self.img.width()==0 or self.img.height() == 0:
-            print 'load image failed:',Path
+            print 'load image failed:',path
             return
         self.repaint()
         
