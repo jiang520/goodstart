@@ -14,6 +14,9 @@ class MainWindow(QtGui.QMainWindow):
         self.tableview.setSelectionBehavior(QAbstractItemView.SelectRows)        
         self.setCentralWidget(self.tableview)
         
+        self.action_rec.setCheckable(True)
+        self.action_rec_gl.setCheckable(True)
+        self.action_rec_mov.setCheckable(True)
         self.action_about.triggered.connect(self.slotAbout)
         self.action_exit.triggered.connect(self.close)
         self.action_tr.triggered.connect(self.slotGenTransmit)
@@ -124,14 +127,14 @@ class MainWindow(QtGui.QMainWindow):
         self.editChannel.setEnabled(not bLocked)
             
     def slotGenTransmit(self):
+        '''
         import TransmitAndRec
         modal = TransmitAndRec.getTr(self)        
         self.tableview.setModel(modal)       
         self.setCellSize(35, 20)
-            
+        '''    
     def slotGetHv1(self):
         import hvswitch
-        print '=======get hv 1'
         model = hvswitch.gethv1(80,80,self)
         self.tableview.setModel(model)
         self.setCellSize(15, 20)
@@ -141,13 +144,35 @@ class MainWindow(QtGui.QMainWindow):
         for x in range(model.columnCount()):
             self.tableview.setColumnWidth(x, width)
         for y in range(model.rowCount()):
-            self.tableview.setRowHeight(y, height)       
+            self.tableview.setRowHeight(y, height)   
+                
     def slotGenRec(self):
-        pass
+        import TransmitAndRec
+        modal = TransmitAndRec.getRec(self)        
+        self.tableview.setModel(modal)       
+        self.setCellSize(35, 20)
+        self.action_rec.setChecked(True)
+        self.action_rec_gl.setChecked(False)
+        self.action_rec_mov.setChecked(False)
+        
     def slotGenRec_mov(self):
-        pass
+        import TransmitAndRec
+        modal = TransmitAndRec.getRecMov(self)        
+        self.tableview.setModel(modal)       
+        self.setCellSize(35, 20)
+        self.action_rec.setChecked(False)
+        self.action_rec_gl.setChecked(False)
+        self.action_rec_mov.setChecked(True)
+        
     def slotGenRec_gl(self):
-        pass
+        import TransmitAndRec
+        modal = TransmitAndRec.getRecGl(self)        
+        self.tableview.setModel(modal)       
+        self.setCellSize(35, 20)
+        self.action_rec.setChecked(False)
+        self.action_rec_gl.setChecked(True)
+        self.action_rec_mov.setChecked(False)
+        
     def slotAbout(self):
         QMessageBox.about(self, "About pyqtNormal", "this programe is build for us scan ")
         
