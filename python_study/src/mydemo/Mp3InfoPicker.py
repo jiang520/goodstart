@@ -11,7 +11,11 @@ class Mp3InfoPicker:
     def __init__(self, path):
         self.path = path
         
-        fp = open(path, 'rb')
+        try:
+            fp = open(path, 'rb')
+        except:
+            print 'invalid file path'
+            return None
         if (fp==None): return
         fp.seek(-128, 2)      
         #tag  = struct.unpack('3s', f.read(3))

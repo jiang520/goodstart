@@ -1,3 +1,4 @@
+#encoding=gb2312
 '''
 Created on 2013-7-17
 

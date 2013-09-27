@@ -36,8 +36,8 @@ class FileBlankDeleter(object):
         srccount = 0;
         dstcount = 0;
         for line in filesrc.readlines():
-           # print line
-           #print 'line strip ---',len(line.strip())
+            # print line
+            #print 'line strip ---',len(line.strip())
             srccount += 1
             
             print '134-foo'[0:3];

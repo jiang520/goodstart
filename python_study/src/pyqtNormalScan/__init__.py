@@ -4,6 +4,8 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 import sys
 from PyQt4 import QtGui
+from TransmitAndRec import TableGetter
+import PyQt4
 
 class MainWindow(QtGui.QMainWindow):
     def __init__(self,parent):
@@ -24,6 +26,7 @@ class MainWindow(QtGui.QMainWindow):
         self.action_rec_mov.triggered.connect(self.slotGenRec_mov)
         self.action_rec_gl.triggered.connect(self.slotGenRec_gl)
         self.slotGenTransmit()
+    
         
     def __initToolbarAndMenu(self):
         menubar = self.menuBar()
@@ -147,8 +150,10 @@ class MainWindow(QtGui.QMainWindow):
             self.tableview.setRowHeight(y, height)   
                 
     def slotGenRec(self):
-        import TransmitAndRec
-        modal = TransmitAndRec.getRec(self)        
+        if not self.updateMachineInfo():
+            QMessageBox.critical(self, "error", "invalid input ")
+            return 
+        modal = TableGetter(self.probecell, self.subcell, self.channel).getRecGl(self)         
         self.tableview.setModel(modal)       
         self.setCellSize(35, 20)
         self.action_rec.setChecked(True)
@@ -156,8 +161,10 @@ class MainWindow(QtGui.QMainWindow):
         self.action_rec_mov.setChecked(False)
         
     def slotGenRec_mov(self):
-        import TransmitAndRec
-        modal = TransmitAndRec.getRecMov(self)        
+        if not self.updateMachineInfo():
+            QMessageBox.critical(self, "error", "invalid input ")
+            return 
+        modal = TableGetter(self.probecell, self.subcell, self.channel).getRecGl(self)          
         self.tableview.setModel(modal)       
         self.setCellSize(35, 20)
         self.action_rec.setChecked(False)
@@ -165,8 +172,10 @@ class MainWindow(QtGui.QMainWindow):
         self.action_rec_mov.setChecked(True)
         
     def slotGenRec_gl(self):
-        import TransmitAndRec
-        modal = TransmitAndRec.getRecGl(self)        
+        if not self.updateMachineInfo():
+            QMessageBox.critical(self, "error", "invalid input ")
+            return 
+        modal = TableGetter(self.probecell, self.subcell, self.channel).getRecGl(self)        
         self.tableview.setModel(modal)       
         self.setCellSize(35, 20)
         self.action_rec.setChecked(False)
@@ -175,7 +184,14 @@ class MainWindow(QtGui.QMainWindow):
         
     def slotAbout(self):
         QMessageBox.about(self, "About pyqtNormal", "this programe is build for us scan ")
-        
+    def updateMachineInfo(self):
+        try:
+            self.probecell = int(self.editCell.text())
+            self.subcell = int(self.editSubCell.text())
+            self.channel = int(self.editChannel.text())  
+            return True
+        except:
+            return False
     
 if __name__=="__main__":
     app =  QtGui.QApplication(sys.argv)

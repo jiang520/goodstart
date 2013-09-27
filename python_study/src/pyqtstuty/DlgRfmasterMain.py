@@ -54,6 +54,7 @@ class DlgRfmasterMain(QMainWindow):
         menufile.addAction(self.action_quit)
         menufile.addSeparator()
         menufile.addAction(self.action_exit)
+       
                 
         menubar.addMenu(menufile)                
         toolbar = QToolBar(self)      
@@ -63,6 +64,7 @@ class DlgRfmasterMain(QMainWindow):
         toolbar.addAction(self.action_next)
         toolbar.addSeparator()
         toolbar.addAction(self.action_exit)
+        toolbar.addSeparator()
         toolbar.addWidget(QLabel('url:',self))
         toolbar.addWidget(self.edit_url)
         toolbar.addAction(self.action_urlimage)

@@ -13,11 +13,11 @@ class DlgAddObject(QWidget):
         super(DlgAddObject, self).__init__(None)
         self.ui = uiDlgAddObject.Ui_DlgAddObject()
         self.ui.setupUi(self)
-        self.connect(self.ui.pushButton_2, SIGNAL("clicked()"), self.close)
-        self.connect(self.ui.pushButton, SIGNAL("clicked()"), self.slotadd)
-        for i in range(10):
-            self.ui.comboBox.insertItem(i, str(i))
-            
+#         self.connect(self.ui.pushButton_2, SIGNAL("clicked()"), self.close)
+#         self.connect(self.ui.pushButton, SIGNAL("clicked()"), self.slotadd)
+#         for i in range(10):
+#             self.ui.comboBox.insertItem(i, str(i))
+#             
     def slotadd(self):        
         strName = self.ui.lineEdit.text()
         strSex = self.ui.comboBox.currentIndex()
