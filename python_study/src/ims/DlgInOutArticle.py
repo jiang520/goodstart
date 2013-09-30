@@ -38,6 +38,7 @@ class DlgInOutArticle(QDialog):
         self.ui.pushButton_reset.clicked.connect(self.slotReset)
         self.ui.pushButton_clear.clicked.connect(self.slotClearlist)
         
+        self.recordList = []
         self.__initListView()
         self.__initTableWidget()
         self.slotUpdateList()
