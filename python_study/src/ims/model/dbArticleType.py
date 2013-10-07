@@ -15,6 +15,12 @@ class ArticleType:
         return "[%d,%s,%d]"%(self.id, self.text, self.parentid)   
       
 class dbArticleType:
+    """
+    物品类型管理信息
+    """
+
+
+    '''查找大类信息列表'''
     def getType1(self):
         sql = '''SELECT "id", "name", "parentid" from tbType where parentid=0''';
         con = dbActicleIMS.getInstance().getConnection()
@@ -27,7 +33,8 @@ class dbArticleType:
             a.parentid = item[2]           
             liType.append(a)
         return liType
-    
+
+    '''查找指定大类下的二级类型信息'''
     def getType2(self, parentid):
         sql = '''SELECT "id", "name", "parentid" from tbType where parentid=%d'''%parentid
         #print sql    
@@ -42,11 +49,60 @@ class dbArticleType:
             #print a.text
             liType.append(a)
         return liType
-        
-    def insert(self, articletype):        
+    '''修改类型名称'''
+    def rename(self, typeid, newname):
+        if newname==None or newname == '': return False
+        con = dbActicleIMS.getInstance().getConnection()
+        if not con:
+            return False
+        '''========执行更名操作'''
+        sql = '''update tbType set name='%s' where id=%d '''%(newname,typeid);
+        print sql
+        try:
+            con.execute(sql)
+            con.commit()
+        except:
+            return False
+        finally:
+            return True
+
+    '''新增类型信息'''
+    def insert(self, articletype):
+        con = dbActicleIMS.getInstance().getConnection()  
+        if con == None: return False              
         if articletype.text == None or len(articletype.text) <1:
             return False
+        if articletype.parentid < 0:
+            print 'parent id cant be < 0' 
+            return False
+        '''====== 检查父类id是否存在'''
+        if articletype.parentid != 0:
+            sql = '''select * from tbType where id=%d'''%articletype.parentid
+            cursor = con.execute(sql)
+            if len(cursor.fetchall()) <= 0: 
+                print 'invalid parent type id (un exist parent type'
+                return False
+        
+        '''======检查是否存在同名,同级的id'''
+        sql = '''select * from tbType where parentid=%d and name='%s' '''%(articletype.parentid,articletype.text)
+        cursor = con.execute(sql)
+        if len(cursor.fetchall()) > 0: 
+            print 'invalid parent type id (un exist parent type'
+            return False
+        '''======执行添加操作'''
         sql = '''insert into tbType("name", "parentid") values('%s',%d)'''%(articletype.text, articletype.parentid);
+        print sql
+        try:
+            con.execute(sql)
+            con.commit()
+        except:
+            return False
+        finally:
+            return True
+
+    '''移除类型信息'''
+    def delete(self, typeid):
+        sql = '''delete from tbType where id=%d'''%typeid;
         print sql
         try:
             con = dbActicleIMS.getInstance().getConnection()

@@ -6,6 +6,8 @@
 import sys
 import os
 from cocos import layer, actions
+from cocos.sprite import Sprite
+from random import random
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 #
 
@@ -54,6 +56,17 @@ class HelloWorld(layer.util_layers.ColorLayer):
         # tell the sprite to scaleback and then scale, and repeat these 2 actions forever
         # sprite.do(Repeat(move))
         sprite.do( Repeat( move+scale + Reverse(move)+Reverse(scale) ) )
+        self.addTarget()
+    def addTarget(self):
+        target = cocos.sprite.Sprite("xiaoqingxin0624.jpg", (0, 0))
+        winsize = cocos.director.director.get_window_size()
+        minY = target.get_rect().height/2
+        maxY = 80#winsize.height-target.get_rect().height/2
+        rangeY = maxY-minY
+        import random
+        actualY = (random.Random.randint()%rangeY)+minY
+        
+        
 
 if __name__ == "__main__":
     # director init takes the same arguments as pyglet.window

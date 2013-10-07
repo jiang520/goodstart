@@ -21,9 +21,14 @@ class dbActicleIMS(object):
             object.__init__(dbActicleIMS.__instance)
             dbActicleIMS.__instance.createDataBase()
         return dbActicleIMS.__instance
-    
+
+    '''创建数据库'''
     def createDataBase(self):
-        self.con = sqlite3.connect("f:\\ims_acticle.db3")        
+        import sys
+        import os
+        self.__dbFilePath = os.getcwd()+"\\ims_acticle.db3"
+        print '======open data base at path:%s'%self.__dbFilePath
+        self.con = sqlite3.connect(self.__dbFilePath)
         sql_cr_tbtyp = ''' CREATE TABLE if not exists tbType
                         (
                         id integer primary key autoincrement,
@@ -68,9 +73,12 @@ class dbActicleIMS(object):
         self.con.execute(sql_cr_tbtyp)
         self.con.execute(sql_cr_tbInOut)
         
-        
+    '''获取数据库连接'''
     def getConnection(self):
         return self.con
+
+    def getDatabaseFilePath(self):
+        return  self.__dbFilePath
     
 if __name__=="__main__":
     a = dbActicleIMS.getInstance()

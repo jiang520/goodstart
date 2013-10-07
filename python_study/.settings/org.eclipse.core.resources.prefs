@@ -1,6 +1,20 @@
+#Fri Oct 04 20:44:10 CST 2013
 eclipse.preferences.version=1
 encoding//src/demo/svn_version/update_version.py=gb2312
 encoding//src/game/__init__.py=gb2312
+encoding//src/ims/DlgArticle.py=gb2312
+encoding//src/ims/DlgClient.py=gb2312
+encoding//src/ims/DlgClientAdd.py=gb2312
+encoding//src/ims/DlgInOutArticle.py=gb2312
+encoding//src/ims/DlgRecordModify.py=gb2312
+encoding//src/ims/DlgRecordSearch.py=gb2312
+encoding//src/ims/__init__.py=gb2312
+encoding//src/ims/model/dbActicleIMS.py=gb2312
+encoding//src/ims/model/dbArticle.py=gb2312
+encoding//src/ims/model/dbArticleType.py=gb2312
+encoding//src/ims/ui/uiDlgArticle.py=utf-8
+encoding//src/ims/ui/uiDlgInOutArticle.py=utf-8
+encoding//src/ims/ui/uiDlgRecordSearch.py=utf-8
 encoding//src/mydemo/Mp3InfoPicker.py=gbk
 encoding//src/mydemo/ipconfig.py=cp936
 encoding//src/pyqtNormalScan/__init__.py=gb2312

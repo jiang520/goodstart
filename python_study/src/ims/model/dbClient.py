@@ -35,16 +35,27 @@ class dbClient():
             list.append(a)
         return list
         
-    def delete(self, id):
-        sql = '''delete * from tbClient where id = %d'''%(id)
+    def getById(self, clientid):
+        sql = '''SELECT "id", "name", "address", "phone", "mobile", "boss", "clienttype", "detail" FROM "tbClient" where id = %d'''%clientid
         con = dbActicleIMS.getInstance().getConnection()
-        con.execute(sql)
-        con.commit()
+        cursor  = con.execute(sql)
+        if cursor == None:  return None
+        item = cursor.fetchone()
+        if item == None: return None
+        a = Client()
+        a.id        = item[0]
+        a.name      = item[1]
+        a.address   = item[2]
+        a.phone     = item[3]
+        a.mobile    = item[4]
+        a.boss      = item[5]
+        a.clienttype= item[6]
+        a.detail    = item[7]
+        return a
         
     def insert(self, client):
-        sql = '''insert into tbClient("id", "name", "address", "phone", "mobile", "boss", "clienttype", "detail")
-                values(%d,'%s','%s','%s','%s','%s','%s','%s')'''%(
-                                                 client.id,
+        sql = '''insert into tbClient("name", "address", "phone", "mobile", "boss", "clienttype", "detail")
+                values('%s','%s','%s','%s','%s','%s','%s')'''%(                                                 
                                                  client.name,
                                                  client.address,
                                                  client.phone,
@@ -52,20 +63,25 @@ class dbClient():
                                                  client.boss,
                                                  client.clienttype,
                                                  client.detail)
-        #print sql
-        con = dbActicleIMS.getInstance().getConnection()
-        con.execute(sql)
-        con.commit()
+        print sql
+        try:
+            con = dbActicleIMS.getInstance().getConnection()
+            con.execute(sql)
+            con.commit()
+            return True
+        except Exception, e:
+            print e
+            return False
         
     ''' modify client data by id and new client data'''
-    def modify(self,id,client):
-        sql = '''update table tbClient set name=%s, 
-                                        address=%s, 
-                                        phone=%s, 
-                                        mobile=%s, 
-                                        boss=%s, 
-                                        clienttype=%s, 
-                                        detail=%s)
+    def modify(self, id, client):
+        sql = '''update  tbClient set name='%s', 
+                                        address='%s', 
+                                        phone='%s', 
+                                        mobile='%s', 
+                                        boss='%s', 
+                                        clienttype='%s', 
+                                        detail='%s'
                                         where id = %d'''%(
                                                  client.name,
                                                  client.address,
@@ -74,11 +90,29 @@ class dbClient():
                                                  client.boss,
                                                  client.clienttype,
                                                  client.detail,
-                                                 client.id,
+                                                 id,
                                                  )
-        con = dbActicleIMS.getInstance().getConnection()
-        con.execute(sql)
-        con.commit()
+        print sql
+        try:
+            con = dbActicleIMS.getInstance().getConnection()
+            con.execute(sql)
+            con.commit()
+            return True
+        except Exception, e:
+            print e
+            return False
+        
+    def delete(self, clientid):
+        sql = ''' delete from tbClient where id = %d'''%clientid
+        print sql
+        try:
+            con = dbActicleIMS.getInstance().getConnection()
+            con.execute(sql)
+            con.commit()
+            return True
+        except Exception, e:
+            print e
+            return False
 
 if __name__=="__main__":
     dbc = dbClient()

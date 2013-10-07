@@ -8,118 +8,252 @@ Created on 2013-9-27
 import sys
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-from ui.uiDlgInOutArticle import Ui_Dialog
+from ims.ui.uiDlgInOutArticle import *
 from ims.model.dbArticleType import *
 from ims.model.dbArticle import *
 from ims.model.dbInoutRecord import *
-from datetime import *
+from ims.DlgArticle import DlgArticle
+from ims.DlgClientAdd import DlgClientAdd
+from ims.DlgClient import DlgClient
 import time
+from datetime import *
 
-class DlgInOutArticle(QDialog):   
-    recordList = []
-     
-    def __init__(self):
-        super(DlgInOutArticle,self).__init__(None)
+class DlgInOutArticle(QDialog):
+    """
+    进出货窗口,用于输入进出货信息
+    """
+
+    def __init__(self, parent, bIn=False):
+        """初始构造函数"""
+        self.__recordList = []
+        self.__client = None
+        super(DlgInOutArticle,self).__init__(parent)
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
-       
-        self.ui.tableView.setLineWidth(50)
+        self.resize(600, 480)
+        if bIn:
+            '''如果是进货'''
+            self.setWindowTitle(u'进货')
+            self.ui.radioButton_out.setChecked(False)
+            self.ui.radioButton_in.setChecked(True)
+            self.ui.pushButton_addtolist.setText(u'添加到入库单')
+        else:
+            '''如果是出货'''
+            self.setWindowTitle(u'出货')
+            self.ui.radioButton_out.setChecked(True)
+            self.ui.radioButton_in.setChecked(False)
+            self.ui.pushButton_addtolist.setText(u'添加到出货单')
+        '''不允许用户自由切换出入库,防止同一货单中又出货又入库的现象发生'''
+        self.ui.radioButton_in.setEnabled(False)
+        self.ui.radioButton_out.setEnabled(False)
         self.ui.lineEdit_count.setText(u'1')
         self.ui.lineEdit_price.setText(u'1.0')
+        self.ui.label_tips.setText(u'')
         self.ui.lineEdit_articlename.setEnabled(False)
         self.ui.lineEdit_articleid.setEnabled(False)
-        self.ui.radioButton_in.setChecked(True)
-        self.ui.pushButton_Cancel.clicked.connect(self.slotCancel)
-        self.ui.dateEdit.setDate(QDate.currentDate())
-        self.ui.treeWidget.itemSelectionChanged.connect(self.slotChooseArticle)
+        self.ui.lineEdit_count.setMaxLength(10)
+        self.ui.lineEdit_price.setMaxLength(10)
+        self.ui.textEdit_detail.setAcceptRichText(False)
+        #自动计算总金额
+        self.ui.lineEdit_count.textChanged.connect(self.slotUpdateTotal)
+        self.ui.lineEdit_price.textChanged.connect(self.slotUpdateTotal)
+        self.ui.dateEdit.setDate(QDate.currentDate())        
+        #连接事件与控件
         self.ui.pushButton_addtolist.clicked.connect(self.slotAddToList)
         self.ui.pushButton_Submit.clicked.connect(self.slotSubmit)
         self.ui.pushButton_gen.clicked.connect(self.slotGenNumber)
         self.ui.pushButton_reset.clicked.connect(self.slotReset)
         self.ui.pushButton_clear.clicked.connect(self.slotClearlist)
-        
-        self.recordList = []
-        self.__initListView()
+        self.ui.pushButton_Cancel.clicked.connect(self.slotCancel)
+        self.ui.pushButton_selectArticle.clicked.connect(self.slotArticleMs)
+        self.ui.pushButton_selectclient.clicked.connect(self.slotSelectClient)
+
+        self.slotUpdateTotal()
         self.__initTableWidget()
         self.slotUpdateList()
         self.slotGenNumber()
-    
+
+    '''初始化货单内容列表控件'''
     def __initTableWidget(self):
+        self.ui.tableView.setLineWidth(50)
         self.ui.tableView.setEditTriggers(QTableWidget.NoEditTriggers)
         self.ui.tableView.setSelectionBehavior(QTableWidget.SelectRows)
         self.ui.tableView.setSelectionMode(QTableWidget.SingleSelection)
         self.ui.tableView.setAlternatingRowColors(True)
+        '''
+        设置出入库物品表格的右键菜单
+        '''
+        self.ui.tableView.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.ui.tableView.customContextMenuRequested.connect(self.slotTreeWidgetContextMenu)
+        self.ui.tableView.setToolTip(u'按DELETE键删除')
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Delete:
+            self.slotDeleteRecordItem()
+            return
+        return QDialog.keyPressEvent(event)
+    '''
+    从货单中删除项目
+    '''
+    def slotDeleteRecordItem(self):
+        self.ui.tableView.setFocus()
+        curIndex = self.ui.tableView.currentIndex()
+        row = curIndex.row()
+        if row < 0 or row >=len(self.__recordList):
+            print 'current index == none'
+            return
+        self.__recordList.pop(row)
+        self.slotUpdateList()
+
     ''' 清空货单列表项'''
     def slotClearlist(self):
         if QMessageBox.warning(self, u'删除提示', u'确定清空货单子项么?你将需要重新添加记录!', QMessageBox.Yes|QMessageBox.No) == QMessageBox.Yes:
-            self.recordList = []
+            self.__recordList = []
             self.slotUpdateList()
-        
+    '''自动计算更新总金额控件中的内容'''
+    def slotUpdateTotal(self):
+        try:
+            count = float(self.ui.lineEdit_count.text())
+            price = float(self.ui.lineEdit_price.text())
+            total = count*price
+            self.ui.lineEdit.setText('%f'%total)
+        except:
+            self.ui.lineEdit.setText('')
     '''重置输入'''
     def slotReset(self):
         self.ui.lineEdit_articleid.setText('')
         self.ui.lineEdit_articlename.setText('')
-        self.ui.lineEdit.setText('')
+        self.ui.lineEdit_count.setText('1.0')
+        self.ui.lineEdit_price.setText('1.0')
+
+    '''弹出窗口让用户选择物品,并显示库存数量'''
+    def slotArticleMs(self):
+        dlg = DlgArticle(self, True)
+        dlg.setModal(True)
+        '''未选中任何物品'''
+        if QDialog.Accepted != dlg.exec_():
+            #print 'not accepted'
+            return
+        article = dlg.getSelectedArticle()
+        if article == None: return
+        #如果返回了正确的物品信息
+        self.ui.lineEdit_articleid.setText(str( article.id))
+        self.ui.lineEdit_articlename.setText(article.model)
+        remainList = dbArticle().getSpecArticleRemainList(article.id)
+        if len(remainList) > 0:
+            remainInfo = remainList[0]
+            self.ui.lineEdit_remain.setText('%f'%remainInfo.remainCount)
+        else:
+            self.ui.lineEdit_remain.setText(u'0')
+
+       
+    '''弹出窗口让用户选择客户对象'''
+    def slotSelectClient(self):
+        dlg = DlgClient(self, True)
+        dlg.setModal(True)
+        if QDialog.Accepted != dlg.exec_():
+            return
+        client = dlg.getChooseClient()
+        if client == None:
+            print 'Choose none client'
+            return
+        else:
+            self.__client = client;
+            self.ui.lineEdit_client.setText('[%d]%s'%(self.__client.id,self.__client.name))
+    '''
+    右键弹出菜单,可以删除
+    '''
+    def slotTreeWidgetContextMenu(self):
+        self.ui.tableView.setFocus()
+        curIndex = self.ui.tableView.currentIndex()
+        row = curIndex.row()
+        print row
+        if row < 0:
+            print 'current index == none'
+            return
+        menuPop = QMenu()
+        action_del = QAction(u'删除', self)
+        action_del.triggered.connect(self.slotDeleteRecordItem)
+        menuPop.addAction(action_del)
+        menuPop.exec_(QCursor.pos())
         
-    '''自动生成货单号'''
+    '''
+    自动生成货单号
+    '''
     def slotGenNumber(self):       
         self.ui.lineEdit_number.setText( QString(str(datetime.now())))
-    '''添加到进出货记录项到货单列表'''    
+
+    '''
+    添加到进出货记录项到货单列表
+    '''
     def slotAddToList(self):
         #try:
         record = InOutRecord()
         strid = self.ui.lineEdit_articleid.text()
         if strid == '' :
-            return
+            self.ui.label_tips.setText(u'''<span style='color:#ff0000'>未选择具体物品型号</span>''')
+            return        
         record.articleid = int(strid)
-        record.model = self.ui.lineEdit_articlename.text()
+        record.model = u'%s'%self.ui.lineEdit_articlename.text()
         record.count = float(self.ui.lineEdit_count.text())
+        '''如果是出货'''
         if self.ui.radioButton_out.isChecked():
             record.count = -record.count
-        record.detail = self.ui.textEdit_detail.toPlainText()
-        record.price = float(self.ui.lineEdit_price.text())
+            '''检查库存和出货量'''
+            remainCount = float(self.ui.lineEdit_remain.text())
+            if remainCount <= 0 or record.count < -remainCount:
+                self.ui.label_tips.setText(u'''<span style='color:#ff0000'>出货数量超出库存</span>''')
+                return
+        record.detail = u'%s'%self.ui.textEdit_detail.toPlainText()
+        record.price  = float(self.ui.lineEdit_price.text())
         record.time = self.ui.dateEdit.text()
+        if self.__client != None:
+            record.clientid = self.__client.id
         '''检查是否已有同类物品(同id,同价格的物品在列表中)'''
         sameRecord = None
-        for rec in self.recordList:
+        for rec in self.__recordList:
             if rec.articleid == record.articleid and rec.price == record.price:
                 sameRecord = rec
         if sameRecord == None:
-            self.recordList.append(record)
+            self.__recordList.append(record)
         else:
             res = QMessageBox.warning(self, u'警告', u'货单中已有此同价物品,是否进行合并?\n是--合并\n 否: 不合并但添加\n 取消--不合并也不添加',
                                  QMessageBox.Yes|QMessageBox.No|QMessageBox.Cancel)
             if res == QMessageBox.Yes:
                 sameRecord.count = record.count + sameRecord.count
             elif res == QMessageBox.No:
-                self.recordList.append(record)
+                self.__recordList.append(record)
             else:
-                return   
+                return
+        '''更新入库单中的物品列表'''
         self.slotUpdateList()
-        # except:
-        #print 'add error!'    
+
+    '''#提交入库'''
     def slotSubmit(self):
         number = self.ui.lineEdit_number.text()
         if number == '':
             QMessageBox.warning(self, u'error', u'货单号不能为空')
             return
-        
+        '''货单中出入库物品列表不能为空'''
+        if len(self.__recordList) <= 0:
+            return
         '''修改记录中的货单号和日期'''
-        for rec in self.recordList:
+        for rec in self.__recordList:
             rec.time = self.ui.dateEdit.text()
             rec.number = number
                         
-        if not dbInOutRecord().addRecords(self.recordList):
+        if not dbInOutRecord().addRecords(self.__recordList):
             QMessageBox.warning(self, u'error', u'入库失败,请重新再试')
         else:
             QMessageBox.information(self, u'error', u'库存记录已更新')
-            self.recordList = []
+            self.__recordList = []
             self.slotUpdateList()
-         
+    '''
+    更新物品列表
+    '''
     def slotUpdateList(self):
-        model = QStandardItemModel(len(self.recordList), 5)
+        model = QStandardItemModel(len(self.__recordList), 5)
         i = 0
-        for record in self.recordList:
+        for record in self.__recordList:
             model.setItem(i, 0, QStandardItem('%d'%record.articleid))
             model.setItem(i, 1, QStandardItem(record.model))
             model.setItem(i, 2, QStandardItem('%f'%record.count))
@@ -127,6 +261,7 @@ class DlgInOutArticle(QDialog):
             model.setItem(i, 4, QStandardItem(record.detail))
             i = i+1  
         self.ui.tableView.setModel(model)
+        '''设置表格表头'''
         labels = QStringList()
         labels.append(u'物品id')        
         labels.append(u'物品名称')        
@@ -134,58 +269,40 @@ class DlgInOutArticle(QDialog):
         labels.append(u'单价')        
         labels.append(u'说明')
         model.setHorizontalHeaderLabels(labels)
+        '''设置行高'''
         for i in range(model.rowCount()):
             self.ui.tableView.setRowHeight(i, 20)
+        '''设置列宽'''
+        self.ui.tableView.setColumnWidth(0, 50)
         self.ui.tableView.setColumnWidth(4, 250)
-                
+        #设置清空,提交按钮的可用性
+        self.ui.pushButton_Submit.setEnabled(len(self.__recordList) > 0)
+        self.ui.pushButton_clear.setEnabled(len(self.__recordList) > 0)
+
+
+    '''弹出窗口让用户选择物品型号'''
     def slotChooseArticle(self):
         item = self.ui.treeWidget.currentItem()
-        if item.text(2) == '':
-            self.ui.pushButton_addtolist.setEnabled(False)
-            return
+        if item == None: return
+        itemData = item.data(0, Qt.UserRole)
+        if itemData == None: return
+        articleid,bTrans = itemData.toInt()
+        if not bTrans: return
         self.ui.lineEdit_articlename.setText(item.text(0))
-        self.ui.lineEdit_articleid.setText(item.text(3))
-        self.ui.pushButton_addtolist.setEnabled(True)
+        self.ui.lineEdit_articleid.setText(str(articleid))
+        remainInfo = dbArticle().getSpecArticleRemainList(articleid)
+        if remainInfo != None and len(remainInfo) > 0:
+            self.ui.lineEdit_remain.setText('%f'%remainInfo[0].remainCount)       
+        
+        
+    '''退出窗口'''
     def slotCancel(self):
         self.close()
             
-    #更新treeview控件    
-    def __initListView(self):       
-        strListHeader = QStringList()
-        strListHeader.append(u'分类')
-        strListHeader.append(u'封装')
-        strListHeader.append(u'备注')
-        strListHeader.append(u'')
-        self.ui.treeWidget.setHeaderLabels(strListHeader)
-        self.ui.treeWidget.clear()
-        listTypes1 = dbArticleType().getType1() 
-        '''插入类别1'''       
-        for t1 in listTypes1:
-            item = QTreeWidgetItem()
-            #print t1
-            item.setText(0, t1.text)
-            item.setText(3, str(t1.id))            
-            listType2 = dbArticleType().getType2(t1.id)
-            '''插入类别2 '''
-            for t2 in listType2:
-                #print '-',t2.text
-                item2 = QTreeWidgetItem()
-                item2.setText(0, t2.text)
-                item2.setText(3, str(t2.id))
-                item.addChild(item2)
-                articles = dbArticle().getArticlesByTypeId(t2.id)
-                '''插入物品型号'''
-                for ac in articles:
-                    item3 = QTreeWidgetItem()
-                    item3.setText(0, ac.model)
-                    item3.setText(1, ac.packaging)
-                    item3.setText(2, ac.detail)
-                    item3.setText(3, str(ac.id))
-                    item2.addChild(item3)
-            self.ui.treeWidget.addTopLevelItem(item)
+    
             
 if __name__ == '__main__':
     appp = QApplication(sys.argv)
-    window = DlgInOutArticle()
+    window = DlgInOutArticle(None)
     window.show()
     appp.exec_()
