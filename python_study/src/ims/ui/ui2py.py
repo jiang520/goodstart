@@ -7,7 +7,8 @@ import os
 import sys
 if __name__ == '__main__':
     exepath = "C:\Python27\Lib\site-packages\PyQt4\pyuic4"
-    os.chdir(os.curdir)
+    print os.getcwd()
+    os.chdir(os.getcwd())
     for file in os.listdir(os.curdir):
         #print type(file)
         #print 'ext =', file[-3:]

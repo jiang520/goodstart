@@ -211,17 +211,15 @@ class DlgInOutArticle(QDialog):
         '''检查是否已有同类物品(同id,同价格的物品在列表中)'''
         sameRecord = None
         for rec in self.__recordList:
-            if rec.articleid == record.articleid and rec.price == record.price:
+            if rec.articleid == record.articleid:
                 sameRecord = rec
         if sameRecord == None:
             self.__recordList.append(record)
         else:
-            res = QMessageBox.warning(self, u'警告', u'货单中已有此同价物品,是否进行合并?\n是--合并\n 否: 不合并但添加\n 取消--不合并也不添加',
-                                 QMessageBox.Yes|QMessageBox.No|QMessageBox.Cancel)
+            res = QMessageBox.warning(self, u'警告', u'货单中已有此物品,是否进行合并?',
+                                 QMessageBox.Yes|QMessageBox.No)
             if res == QMessageBox.Yes:
                 sameRecord.count = record.count + sameRecord.count
-            elif res == QMessageBox.No:
-                self.__recordList.append(record)
             else:
                 return
         '''更新入库单中的物品列表'''

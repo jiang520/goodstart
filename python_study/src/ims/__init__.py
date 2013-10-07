@@ -7,9 +7,10 @@ Created on 2013-6-6
 import sys
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-from ims.DlgClient import DlgClient
+from ims.DlgClient import *
 from ims.DlgArticle import DlgArticle
 from ims.DlgRecordSearch import DlgRecordSearch
+from ims.DlgInOutArticle import *
 from ims.model.dbInoutRecord import *
 from ims.model.dbArticleType import *
 from ims.model.dbArticle import *
@@ -279,15 +280,13 @@ class DlgIMSMain(QMainWindow):
         dlg.exec_()
     #进货
     def slotIn(self):
-        import DlgInOutArticle
-        dlg = DlgInOutArticle.DlgInOutArticle(self, True)
+        dlg = DlgInOutArticle(self, True)
         dlg.setModal(True)
         dlg.exec_()
 
     '''出货'''
     def slotOut(self):
-        import DlgInOutArticle
-        dlg = DlgInOutArticle.DlgInOutArticle(self, False)
+        dlg = DlgInOutArticle(self, False)
         dlg.setModal(True)
         dlg.exec_()
 
