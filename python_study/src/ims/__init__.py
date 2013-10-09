@@ -11,17 +11,26 @@ from ims.DlgClient import *
 from ims.DlgArticle import DlgArticle
 from ims.DlgRecordSearch import DlgRecordSearch
 from ims.DlgInOutArticle import *
+from ims.model import dbSysUser
 from ims.model.dbInoutRecord import *
 from ims.model.dbArticleType import *
 from ims.model.dbArticle import *
-
+from ims.DlgLogin import DlgLogin
+#全局用户
+g_current_user = None
 
 class DlgIMSMain(QMainWindow): 
     
     def __init__(self):
         super(DlgIMSMain, self).__init__(None)
+        #检查用户登陆信息
+        window_login = DlgLogin(None)
+        window_login.setModal(True)
+        #取消登陆
+        if window_login.exec_() != QDialog.Accepted:
+            sys.exit(0)
+        self.setWindowTitle(u'ut库存管理系统--欢迎使用-%s'%g_current_user.username)
         tabWidget = QTabWidget(self)
-        
         self.tableViewRemain = QTableView()
         tabWidget.addTab(self.tableViewRemain, u'库存列表')
         
@@ -49,7 +58,8 @@ class DlgIMSMain(QMainWindow):
         self.__updateArticleCountList()
         self.__udpateArticleTreeView()     
         self.treeArticle.itemSelectionChanged.connect(self.__updateArticleCountList)
-        
+
+
         
     '''更新物品分类树'''
     def __initTreeCtrl_Article(self):               
@@ -117,6 +127,8 @@ class DlgIMSMain(QMainWindow):
         self.action_export_articl = QAction(u'导出物品列表',self)
         self.action_export_record = QAction(u'导出出库库记录列表', self)
         self.action_about         = QAction(u'关于', self)
+        self.action_change_pass   = QAction(u'修改密码', self)
+        self.action_logout        = QAction(u'注销',self)
 
         self.action_client.triggered.connect(self.slotDlgClient)
         self.action_exit.triggered.connect(self.close)
@@ -128,6 +140,8 @@ class DlgIMSMain(QMainWindow):
 
         self.action_export_remain.triggered.connect(self.slotExportRemain)
         self.action_export_record.triggered.connect(self.slotExportRecord)
+        self.action_logout.triggered.connect(self.slotLogout)
+        self.action_change_pass.triggered.connect(self.slotChangePass)
 
         menubar = self.menuBar()
         menufile = QMenu(u"文件",self)
@@ -142,8 +156,14 @@ class DlgIMSMain(QMainWindow):
         menuTools.addAction(self.action_export_record)
         menuTools.addSeparator()
         menuTools.addAction(self.action_backup)
+
+        menuUser = QMenu(u'帐户设置',self)
+        menuUser.addAction(self.action_change_pass)
+        menuUser.addAction(self.action_logout)
+
         menubar.addMenu(menufile)
         menubar.addMenu(menuTools)
+        menubar.addMenu(menuUser)
         menubar.addAction(self.action_about)
 
     def __initToolbar(self):
@@ -269,7 +289,11 @@ class DlgIMSMain(QMainWindow):
         self.tableViewRemain.setColumnWidth(5, 230)
         for i in range(model.rowCount()):
             self.tableViewRemain.setRowHeight(i, 20)
-        
+
+    def slotChangePass(self):
+        pass
+    def slotLogout(self):
+        pass
 
     '''客户信息管理'''
     def slotDlgClient(self):
@@ -302,6 +326,12 @@ if __name__ == '__main__':
     appp = QApplication(sys.argv)
     appp.setApplicationName(u'UT库存管理系统')
     appp.setWindowIcon(QIcon("images/14.png"))
+
+    #检查数据库是否可连接
+    if dbActicleIMS.getInstance().getConnection() is None:
+        QMessageBox.critical(None, u'Error', '数据库连接错误')
+        sys.exit(0)
+    #显示主窗口
     window = DlgIMSMain()
     window.setWindowTitle(u'UT库存管理系统')
     window.show()

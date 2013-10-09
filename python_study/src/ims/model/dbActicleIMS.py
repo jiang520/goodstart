@@ -26,7 +26,8 @@ class dbActicleIMS(object):
     def createDataBase(self):
         import sys
         import os
-        self.__dbFilePath = os.getcwd()+"\\ims_acticle.db3"
+        self.__dbFilePath = os.getcwd()+u"\\ims_acticle.db3"
+        print self.__dbFilePath
         print '======open data base at path:%s'%self.__dbFilePath
         self.con = sqlite3.connect(self.__dbFilePath)
         sql_cr_tbtyp = ''' CREATE TABLE if not exists tbType
@@ -67,11 +68,26 @@ class dbActicleIMS(object):
                             function  varchar(100),
                             detail    varchar(200)
                             );'''
+        sql_cr_tbSysUser = '''CREATE TABLE tbSysUser(
+                                id integer  primary key autoincrement,
+                                username varchar(50) not null unique,
+                                password varchar(100) not null);'''
+        import  base64
+        passd = u'5950ut'
+        pass_encoded = base64.encodestring(passd)
+        pass_encoded = pass_encoded.strip()
+        sql_insert_default_user = ''' insert into tbSysUser (username, password) values('%s',"%s") '''%('admin', pass_encoded)
         self.con.execute(sql_cr_tbArticle)
         self.con.execute(sql_cr_tbclient)
         self.con.execute(sql_cr_tbclient)
         self.con.execute(sql_cr_tbtyp)
         self.con.execute(sql_cr_tbInOut)
+        try:
+            self.con.execute(sql_insert_default_user)
+        except Exception, e:
+            print 'Create default sysuser failed:', e
+        self.con.commit()
+
         
     '''获取数据库连接'''
     def getConnection(self):

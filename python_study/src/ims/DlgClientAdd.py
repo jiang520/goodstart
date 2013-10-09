@@ -8,9 +8,9 @@ from ui import uiDlgArticle
 import sys
 
 from PyQt4.QtCore import *
+from ims.ui.uiDlgClientAdd import *
 from PyQt4.QtGui import *
 from ims.model.dbClient import *
-from ims.ui.uiDlgClientAdd import *
 from ims.ui import uiDlgClientAdd
 class DlgClientAdd(QDialog):
     __oldclientInfo = None
@@ -22,8 +22,14 @@ class DlgClientAdd(QDialog):
         self.ui.setupUi(self)
         self.ui.pushButton_cancel.clicked.connect(self.__slotCancel)
         self.ui.pushButton_ok.clicked.connect(self.__slotOk)
+        #初始化客户类型列表
+        client_type_list = [u'芯片供货商',u'经销商',u'OEM客户',u'技术外包客户',u'医院',u'政府机关']
+        for name in client_type_list:  self.ui.comboBox_clienttype.addItem(name)
+
+        #如果是修改客户信息,则先置初值
         if oldClinet != None:
             self.__oldclientInfo = oldClinet
+            self.ui.comboBox_clienttype.setEditText(oldClinet.type)
             self.ui.lineEdit_address.setText(oldClinet.address)
             self.ui.lineEdit_boss.setText(oldClinet.boss)
             self.ui.lineEdit_mobile.setText(oldClinet.mobile)
@@ -43,12 +49,14 @@ class DlgClientAdd(QDialog):
         client.mobile = u'%s'%self.ui.lineEdit_mobile.text()
         client.name   = u'%s'%self.ui.lineEdit_name.text()
         client.phone  = u'%s'%self.ui.lineEdit_phone.text()
+        client.type   = u'%s'%self.ui.comboBox_clienttype.currentText()
         #校样客户信息是否合法,客户姓名必须不能为空
         client.name = client.name.lstrip()
         client.name = client.name.rstrip()
 
         if client.name == '':
             QMessageBox.critical(self, u'error', u'公司名称/单位名称不能为空')
+            self.ui.lineEdit_name.setFocus()
             return
 
         if self.__oldclientInfo == None:
