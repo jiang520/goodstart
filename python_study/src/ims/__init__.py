@@ -305,4 +305,7 @@ if __name__ == '__main__':
     window = DlgIMSMain()
     window.setWindowTitle(u'UT库存管理系统')
     window.show()
+    
     appp.exec_()
+
+
