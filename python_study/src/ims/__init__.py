@@ -16,41 +16,42 @@ from ims.model.dbInoutRecord import *
 from ims.model.dbArticleType import *
 from ims.model.dbArticle import *
 from ims.DlgLogin import DlgLogin
-#全局用户
-g_current_user = None
+import ims
+
 
 class DlgIMSMain(QMainWindow): 
     
     def __init__(self):
         super(DlgIMSMain, self).__init__(None)
         #检查用户登陆信息
-        window_login = DlgLogin(None)
+        window_login = DlgLogin(self)
         window_login.setModal(True)
         #取消登陆
         if window_login.exec_() != QDialog.Accepted:
             sys.exit(0)
-        self.setWindowTitle(u'ut库存管理系统--欢迎使用-%s'%g_current_user.username)
-        tabWidget = QTabWidget(self)
-        self.tableViewRemain = QTableView()
-        tabWidget.addTab(self.tableViewRemain, u'库存列表')
-        
+        if ims.model.dbSysUser.g_current_user is None:
+            sys.exit(0)
+        self.setWindowTitle(u'ut库存管理系统--欢迎使用-%s'%ims.model.dbSysUser.g_current_user.username)
+        self.tabWidget = QTabWidget(self)
+        self.tableViewRemain = QTableView(self)
+        self.tabWidget.addTab(self.tableViewRemain, u'库存列表')
         '''进出货记录'''
-        self.dlgRecordSearch = DlgRecordSearch()
-        tabWidget.addTab(self.dlgRecordSearch, u'进出货记录')  
-        tabWidget.addTab(DlgClient(self), u'客户列表')
-          
+        self.dlgRecordSearch = DlgRecordSearch(self)
+        self.tabWidget.addTab(self.dlgRecordSearch, u'进出货记录')
+        self.tabWidget.addTab(DlgClient(self), u'客户列表')
+
         '''物品列表'''        
         spliterH = QSplitter(Qt.Horizontal, self)       
         self.treeArticle = QTreeWidget(self)       
-        spliterH.addWidget(self.treeArticle)       
-       
-        spliterH.addWidget(tabWidget)
+        spliterH.addWidget(self.treeArticle)
+
+        spliterH.addWidget(self.tabWidget)
         spliterH.setLineWidth(0)
         spliterH.setLineWidth(1)
         spliterH.setStretchFactor(0, 30)
         spliterH.setStretchFactor(1, 100)
         self.setCentralWidget(spliterH)
-        
+
         self.__initMenu()
         self.__initToolbar()
         self.setMinimumSize(800, 600)
@@ -58,7 +59,6 @@ class DlgIMSMain(QMainWindow):
         self.__updateArticleCountList()
         self.__udpateArticleTreeView()     
         self.treeArticle.itemSelectionChanged.connect(self.__updateArticleCountList)
-
 
         
     '''更新物品分类树'''
@@ -183,37 +183,15 @@ class DlgIMSMain(QMainWindow):
         toolbar.addAction(self.action_exit)
         self.addToolBar(toolbar)
 
-    '''导出指定的tablewiget的数据到文件中'''
-    @staticmethod
-    def __ExportTableWidgetData(tableWidget, filepath):
-        if filepath == None or len(filepath) <= 0: return
-        if tableWidget == None : return
-        model = tableWidget.model()
-        rowCount = model.rowCount()
-        colCount = model.columnCount()
-        import codecs
-        fileExport = codecs.open(filepath, 'w', 'utf-8')
-        for col in range(colCount):
-            str = model.headerData(col, Qt.Horizontal)
-            str = u'%s,'%str.toString()
-            fileExport.write(str)
-            fileExport.write(',')
-        fileExport.write('\r\n')
-        for row in range(rowCount):
-            for col in range(colCount):
-                index = model.index(row, col)
-                data = model.data(index, Qt.DisplayRole)
-                #print data.toString()
-                fileExport.write(u'%s,'%data.toString())
-            fileExport.write('\r\n')
-        fileExport.close()
+
 
     #导出库存列表
     def slotExportRemain(self):
         filePath = QFileDialog.getSaveFileName(self)
         if not filePath: return
         filePath.append('.txt')
-        self.__ExportTableWidgetData(self.tableViewRemain, filePath)
+        import ims.FunctionTools
+        ims.FunctionTools.ExportTableWidgetData(self.tableViewRemain, filePath)
         QMessageBox.information(self, u'info', u'已导出到%s'%filePath)
 
     #导出出入库记录
@@ -221,7 +199,8 @@ class DlgIMSMain(QMainWindow):
         filePath = QFileDialog.getSaveFileName(self)
         if not filePath: return
         filePath.append('.txt')
-        self.__ExportTableWidgetData(self.dlgRecordSearch.ui.tableView, filePath)
+        import ims.FunctionTools
+        ims.FunctionTools.ExportTableWidgetData(self.dlgRecordSearch.ui.tableView, filePath)
         QMessageBox.information(self, u'info', u'已导出到%s'%filePath)
 
     def slotAbout(self):
@@ -272,7 +251,7 @@ class DlgIMSMain(QMainWindow):
             remainlist = dbArticle().getSpecArticleRemainList(article_id)
             self.dlgRecordSearch.setArticleIdFilter(article_id)
         #print remainlist
-        model = QStandardItemModel(len(remainlist),5)
+        model = QStandardItemModel(len(remainlist),5, self)
         model.setHorizontalHeaderLabels(self.__getArticleCountListLabels())
         row = 0
         for item in remainlist:

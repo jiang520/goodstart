@@ -9,6 +9,7 @@ from PyQt4.QtGui import *
 import sys
 from ims.model.dbSysUser import *
 from ims.ui.uiDlgLogin import *
+import ims
 from PyQt4.QtCore import *
 from ims.model.dbClient import *
 class DlgLogin(QDialog):
@@ -62,8 +63,7 @@ class DlgLogin(QDialog):
             QMessageBox.critical(self, 'info', u'’ ªßªÚ√‹¬Î ‰ŒÛ¥ÌŒÛ')
             self.ui.lineEdit_pass.setFocus()
         else:
-            global g_current_user
-            g_current_user = userinfo
+            ims.model.dbSysUser.g_current_user = userinfo
             self.accept()
 
 if __name__=="__main__":

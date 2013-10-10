@@ -14,8 +14,7 @@ from ims.model.dbInoutRecord import *
 from ims.DlgRecordModify import DlgRecordModify
 
 class DlgRecordSearch(QDialog):
-    __articleid = None
-    
+
     def setArticleIdFilter(self, id):
         if id == None or id <= 0:
             self.__articleid = None
@@ -23,27 +22,28 @@ class DlgRecordSearch(QDialog):
             self.__articleid = id
         self.__initRecordTable()
 
-    def __init__(self):
-        super(DlgRecordSearch, self).__init__(None)
+    def __init__(self,parent=None):
+        super(DlgRecordSearch, self).__init__(parent)
         self.ui = uiDlgRecordSearch.Ui_Dialog()
         self.ui.setupUi(self)
-        self.tableInoutRecord = self.ui.tableView
+
+        self.__articleid = None
         self.__initRecordTable()
         self.ui.dateEdit_end.setDate(QDate.currentDate())
         self.ui.pushButton_apply.clicked.connect(self.slotApplySearch)
         self.ui.pushButton_reset.clicked.connect(self.slotResetSearch)
         
-        self.tableInoutRecord.setEditTriggers(QTableWidget.NoEditTriggers)
-        self.tableInoutRecord.setSelectionBehavior(QTableWidget.SelectRows)
-        self.tableInoutRecord.setSelectionMode(QTableWidget.SingleSelection)    
-        self.tableInoutRecord.setAlternatingRowColors(True)
-        self.tableInoutRecord.doubleClicked.connect(self.slotModifyRecord)
+        self.ui.tableView.setEditTriggers(QTableWidget.NoEditTriggers)
+        self.ui.tableView.setSelectionBehavior(QTableWidget.SelectRows)
+        self.ui.tableView.setSelectionMode(QTableWidget.SingleSelection)
+        self.ui.tableView.setAlternatingRowColors(True)
+        self.ui.tableView.doubleClicked.connect(self.slotModifyRecord)
         
 
     #修改记录
     def slotModifyRecord(self):
-        model = self.tableInoutRecord.model()
-        curIndex = self.tableInoutRecord.currentIndex()
+        model = self.ui.tableView.model()
+        curIndex = self.ui.tableView.currentIndex()
         celldata = model.index(curIndex.row(), 0).data()
         resTrans =  celldata.toInt()
         if not resTrans[1]: return
@@ -57,8 +57,8 @@ class DlgRecordSearch(QDialog):
 
     #删除记录
     def slotDelRecord(self):        
-        model = self.tableInoutRecord.model()
-        curIndex = self.tableInoutRecord.currentIndex()
+        model = self.ui.tableView.model()
+        curIndex = self.ui.tableView.currentIndex()
         if curIndex is None:
             QMessageBox.critical(self, u'Error', u'未选择任何行')
             self.ui.tableView.setFocus()
@@ -103,8 +103,8 @@ class DlgRecordSearch(QDialog):
         #print strNumber, strDateEnd, strDateStart
         #获取组合查询结果
         recordlist = dbInOutRecord().getRecord(0, 50, strNumber, strDateStart, strDateEnd,self.__articleid)
-        #更新tabe控件
-        model = QStandardItemModel(len(recordlist), 6)
+        #更新tabe控件,必须指定parent为self/其他,否则退出有错
+        model = QStandardItemModel(len(recordlist), 6, self)
         i = 0
         for item in recordlist:
             model.setItem(i, 0, QStandardItem(QString(str(item.id))))
@@ -116,7 +116,7 @@ class DlgRecordSearch(QDialog):
             model.setItem(i, 6, QStandardItem(QString('%f'%(item.count*item.price))))
             model.setItem(i, 7, QStandardItem(QString(item.number)))
             model.setItem(i, 8, QStandardItem(QString(item.detail)))
-            self.tableInoutRecord.setRowHeight(i,10)
+            self.ui.tableView.setRowHeight(i,10)
             i=i+1
         #table控件的标题头
         labels = QStringList()
@@ -130,15 +130,15 @@ class DlgRecordSearch(QDialog):
         labels.append(QString(u'货单号'))
         labels.append(QString(u'详情'))
         model.setHorizontalHeaderLabels(labels)
-        self.tableInoutRecord.setModel(model)
+        self.ui.tableView.setModel(model)
         #设置行高,列宽
         for i in range(model.rowCount(parent=QModelIndex())):
-            self.tableInoutRecord.setRowHeight(i, 20)
+            self.ui.tableView.setRowHeight(i, 20)
         for i in range(7):
-            self.tableInoutRecord.setColumnWidth(i, 80)
-        self.tableInoutRecord.setColumnWidth(0, 40)
-        self.tableInoutRecord.setColumnWidth(3, 40)
-        self.tableInoutRecord.setColumnWidth(7, 150)
+            self.ui.tableView.setColumnWidth(i, 80)
+        self.ui.tableView.setColumnWidth(0, 40)
+        self.ui.tableView.setColumnWidth(3, 40)
+        self.ui.tableView.setColumnWidth(7, 150)
             
         
     #应用组合查询条件

@@ -3,7 +3,7 @@ __author__ = 'jiang'
 
 from dbActicleIMS import *
 import base64
-
+g_current_user = None
 class SysUser:
     def __init__(self):
         self.username = ''

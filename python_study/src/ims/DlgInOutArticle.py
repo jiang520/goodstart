@@ -249,7 +249,7 @@ class DlgInOutArticle(QDialog):
     更新物品列表
     '''
     def slotUpdateList(self):
-        model = QStandardItemModel(len(self.__recordList), 5)
+        model = QStandardItemModel(len(self.__recordList), 5, self)
         i = 0
         for record in self.__recordList:
             model.setItem(i, 0, QStandardItem('%d'%record.articleid))
