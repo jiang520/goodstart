@@ -76,7 +76,7 @@ class dbActicleIMS(object):
         passd = u'5950ut'
         pass_encoded = base64.encodestring(passd)
         pass_encoded = pass_encoded.strip()
-        sql_insert_default_user = ''' insert into tbSysUser (username, password) values('%s',"%s") '''%('admin', pass_encoded)
+        sql_insert_default_user = ''' insert into tbSysUser (username, password,usertype) values('%s',"%s",'admin') '''%('admin', pass_encoded)
         self.con.execute(sql_cr_tbArticle)
         self.con.execute(sql_cr_tbclient)
         self.con.execute(sql_cr_tbclient)

@@ -8,6 +8,7 @@ Created on 2013-10-2
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 import sys
+import ims
 from ims.ui.uiDlgRecordSearch import *
 from ims.ui import uiDlgRecordSearch
 from ims.model.dbInoutRecord import *
@@ -42,6 +43,9 @@ class DlgRecordSearch(QDialog):
 
     #修改记录
     def slotModifyRecord(self):
+        #权限检查
+        if not ims.model.dbSysUser.g_current_user.is_enable_write_all():
+            return
         model = self.ui.tableView.model()
         curIndex = self.ui.tableView.currentIndex()
         celldata = model.index(curIndex.row(), 0).data()
@@ -57,6 +61,9 @@ class DlgRecordSearch(QDialog):
 
     #删除记录
     def slotDelRecord(self):        
+        #权限检查
+        if not ims.model.dbSysUser.g_current_user.is_enable_write_all():
+            return
         model = self.ui.tableView.model()
         curIndex = self.ui.tableView.currentIndex()
         if curIndex is None:

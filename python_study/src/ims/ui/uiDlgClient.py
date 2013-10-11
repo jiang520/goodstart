@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'DlgClient.ui'
 #
-# Created: Thu Oct 10 00:00:53 2013
+# Created: Sat Oct 12 00:02:49 2013
 #      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!

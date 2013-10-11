@@ -7,6 +7,7 @@ Created on 2013-9-27
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 import sys
+import ims
 from ims.model.dbClient import *
 from ims.ui.uiDlgClient import *
 from ims.DlgClientAdd import DlgClientAdd
@@ -37,13 +38,18 @@ class DlgClient(QDialog):
         else:
             self.setWindowTitle(u'客户信息(双击可修改)')
             self.ui.tableView.doubleClicked.connect(self.slotModifyClient)                      
-             
         self.updateTableWidget()
-        
+
+        #权限限制
+        if not ims.model.dbSysUser.g_current_user.is_enable_write_all():
+            self.ui.pushButton_add.setEnabled(False)
+            self.ui.pushButton_del.setEnabled(False)
+            self.ui.pushButton_modify.setEnabled(False)
+
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Delete:
             self.slotDeleteClient()
-            return True    
+            return
         return QDialog.keyPressEvent(self, event) 
 
     def slotExportClient(self):
@@ -54,12 +60,14 @@ class DlgClient(QDialog):
         QMessageBox.information(self, u'info', u'已导出到%s'%filePath)
 
     def slotAddClient(self):
+        if not ims.model.dbSysUser.g_current_user.is_enable_write_all():return
         dlg = DlgClientAdd(self)
         dlg.setModal(True)
         dlg.exec_()
         self.updateTableWidget()
         
     def slotModifyClient(self):
+        if not ims.model.dbSysUser.g_current_user.is_enable_write_all(): return
         model = self.tableView.model()
         curIndex = self.tableView.currentIndex()
         data = model.index(curIndex.row(), 0).data()
@@ -74,6 +82,7 @@ class DlgClient(QDialog):
         self.updateTableWidget()
         
     def slotDeleteClient(self):
+        if not ims.model.dbSysUser.g_current_user.is_enable_write_all(): return
         res = QMessageBox.warning(self, u'warning', u'确定删除此项信息吗?', QMessageBox.Yes|QMessageBox.No, QMessageBox.No)
         if res == QMessageBox.No: 
             self.tableView.setFocus()

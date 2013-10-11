@@ -6,7 +6,7 @@ Created on 2013-9-27
 '''
 from ui import uiDlgArticle
 import sys
-
+import ims
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from ims.model.dbArticleType import dbArticleType
@@ -82,6 +82,7 @@ class DlgArticle(QDialog):
             self.slotArticleItemChanged()
     '''右键弹出菜单'''
     def slotContextMenu(self, item, col):
+        if not ims.model.dbSysUser.g_current_user.is_enable_write_all():return
         if qApp.mouseButtons() == Qt.LeftButton: return
         res = item.data(0, Qt.UserRole+1).toInt()
         if not res[1]:return
@@ -206,6 +207,9 @@ class DlgArticle(QDialog):
          
     '''添加物品分类'''
     def slotAdd(self):
+        #权限检查
+        if not ims.model.dbSysUser.g_current_user.is_enable_write_all():return
+
         item = self.ui.treeWidget.currentItem()
         if item == None:return
         itemData = self.__getItemIdDepth__(item)
@@ -231,6 +235,8 @@ class DlgArticle(QDialog):
 
     '''删除物品分类'''        
     def slotDel(self):
+        if not ims.model.dbSysUser.g_current_user.is_enable_write_all():return
+
         item = self.ui.treeWidget.currentItem()        
         if  item.child(0) :
             QMessageBox.critical(self, u'error', u'需先删除所有子项!')
@@ -258,6 +264,8 @@ class DlgArticle(QDialog):
 
     '''对物品类型节点改名'''
     def slotRename(self):
+        if not ims.model.dbSysUser.g_current_user.is_enable_write_all():return
+
         item = self.ui.treeWidget.currentItem()
         if not item : return
         res = self.__getItemIdDepth__(item)
@@ -315,6 +323,12 @@ class DlgArticle(QDialog):
         self.ui.textEdit_detail.setText(self.__articleSelected.detail)
         self.ui.groupBox.setEnabled(True)
         self.ui.pushButton_add.setEnabled(True)
+        '''权限检查,不允许修改物品信息,或添加类型'''
+        if not ims.model.dbSysUser.g_current_user.is_enable_write_all():
+            self.ui.pushButton_addtype1.setEnabled(False)
+            self.ui.pushButton_addtype2.setEnabled(False)
+            self.ui.pushButton_add.setEnabled(False)
+
         
     '''类别1更新了,就更新类别2列表'''   
     def slotType1changed(self):
@@ -323,6 +337,9 @@ class DlgArticle(QDialog):
         
     '''修改物料信息到数据库'''
     def slotModifyArticle(self):
+        #权限检查
+        if not ims.model.dbSysUser.g_current_user.is_enable_write_all():return
+
         article = Article()
         res = self.ui.comboBox_type2.itemData(self.ui.comboBox_type2.currentIndex()).toInt()
         if not res[1]:
@@ -346,6 +363,7 @@ class DlgArticle(QDialog):
     
     #添加类别1    
     def slotAddType1(self):
+        if not ims.model.dbSysUser.g_current_user.is_enable_write_all():return
         #msg = QMessageBox.information(self, u'input', u'input')
         text = QInputDialog.getText(self,
                     QString(u"新增类别名" ),
@@ -363,6 +381,8 @@ class DlgArticle(QDialog):
         
     '''添加类别2'''    
     def slotAddType2(self):
+        if not ims.model.dbSysUser.g_current_user.is_enable_write_all():return
+
         '''先获取父类别id'''
         res = self.ui.comboBox_type1.itemData(self.ui.comboBox_type1.currentIndex()).toInt()
         if not res[1]:

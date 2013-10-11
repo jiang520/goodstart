@@ -13,7 +13,7 @@ class SysUser:
 
     #可以修改内容
     def is_enable_write_all(self):
-        if usertype == u'writer':
+        if self.usertype == u'writer':
             return  True
         return  False
     def is_enable_read_all(self):
@@ -54,11 +54,12 @@ class dbSysUser:
     #添加用户信息
     def addUser(self, userinfo):
         if len(userinfo.username) > 50:return  False
+        if len(userinfo.usertype) <= 0: return  False
         strEncodePass = base64.encodestring(userinfo.password)
         strEncodePass = strEncodePass.strip()
         if len(strEncodePass) > 100: return False
-        sql = ''' insert into tbSysUser (username, password)
-                        values('%s','%s')'''%(userinfo.username, strEncodePass)
+        sql = ''' insert into tbSysUser (username, password,usertype)
+                        values('%s','%s')'''%(userinfo.username, strEncodePass, userinfo.usertype)
         print sql
         try:
             print sql
@@ -71,17 +72,14 @@ class dbSysUser:
             return  False
 
     #修改用户信息
-    def modifyUser(self, userinfo):
+    def modifyPassword(self, username, password):
         try:
-            strEncodePass = base64.encodestring(userinfo.password)
+            strEncodePass = base64.encodestring(password)
             strEncodePass = strEncodePass.strip()
-            if len(userinfo.username > 50): return  False
-            if len(strEncodePass > 100): return  False
-            sql = ''' update tbSysUser set username='%s',
-                                        password='%s'
-                                        where id=%d '''%(userinfo.username,
-                                                         strEncodePass,
-                                                         userinfo.id)
+            if len(username) > 50: return  False
+            if len(strEncodePass)    > 100: return  False
+            sql = ''' update tbSysUser set password='%s'
+                                        where username='%s' '''%(strEncodePass, username)
             print sql
             con = dbActicleIMS.getInstance().getConnection()
             con.execute(sql)
@@ -91,10 +89,9 @@ class dbSysUser:
             print e
             return  False
 
-
-    def deleteUser(self, userid):
+    def deleteUser(self, username):
          try:
-            sql = ''' delete from tbSysUser where id=%d '''%(userid)
+            sql = ''' delete from tbSysUser where username='%s' '''%(username)
             print sql
             con = dbActicleIMS.getInstance().getConnection()
             con.execute(sql)
@@ -103,6 +100,21 @@ class dbSysUser:
          except Exception, e:
             print e
             return  False
+    def get_all_users(self):
+        sql = ''' select id,username, usertype from tbSysUser '''
+        print sql
+        con = dbActicleIMS.getInstance().getConnection()
+        cursor = con.execute(sql)
+        if cursor is None: return
+        usrlist = []
+        for item in cursor.fetchall():
+            user = SysUser()
+            user.id = int(item[0])
+            user.username = item[1]
+            user.usertype = item[2]
+            usrlist.append(user)
+        return  usrlist
+
 
  #主函数
 if __name__ == '__main__':

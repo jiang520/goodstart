@@ -52,9 +52,9 @@ class DlgIMSMain(QMainWindow):
         spliterH.setStretchFactor(1, 100)
         self.setCentralWidget(spliterH)
 
+        self.setMinimumSize(800, 600)
         self.__initMenu()
         self.__initToolbar()
-        self.setMinimumSize(800, 600)
         self.__initTreeCtrl_Article()
         self.__updateArticleCountList()
         self.__udpateArticleTreeView()     
@@ -128,7 +128,6 @@ class DlgIMSMain(QMainWindow):
         self.action_export_record = QAction(u'导出出库库记录列表', self)
         self.action_about         = QAction(u'关于', self)
         self.action_change_pass   = QAction(u'修改密码', self)
-        self.action_logout        = QAction(u'注销',self)
 
         self.action_client.triggered.connect(self.slotDlgClient)
         self.action_exit.triggered.connect(self.close)
@@ -140,8 +139,7 @@ class DlgIMSMain(QMainWindow):
 
         self.action_export_remain.triggered.connect(self.slotExportRemain)
         self.action_export_record.triggered.connect(self.slotExportRecord)
-        self.action_logout.triggered.connect(self.slotLogout)
-        self.action_change_pass.triggered.connect(self.slotChangePass)
+        self.action_change_pass.triggered.connect(self.slotChangePassword)
 
         menubar = self.menuBar()
         menufile = QMenu(u"文件",self)
@@ -159,12 +157,14 @@ class DlgIMSMain(QMainWindow):
 
         menuUser = QMenu(u'帐户设置',self)
         menuUser.addAction(self.action_change_pass)
-        menuUser.addAction(self.action_logout)
 
         menubar.addMenu(menufile)
         menubar.addMenu(menuTools)
         menubar.addMenu(menuUser)
         menubar.addAction(self.action_about)
+        if not ims.model.dbSysUser.g_current_user.is_enable_write_all():
+            self.action_in.setEnabled(False)
+            self.action_out.setEnabled(False)
 
     def __initToolbar(self):
         toolbar = QToolBar(self)
@@ -300,6 +300,21 @@ class DlgIMSMain(QMainWindow):
         dlg.exec_()
         self.__udpateArticleTreeView()
 
+    def slotChangePassword(self):
+        res = QInputDialog.getText(self, u'请输入新密码', u'修改密码', QLineEdit.PasswordEchoOnEdit)
+        print '====res = ',res
+        if not res[1]: return
+        cur_user = ims.model.dbSysUser.g_current_user
+        new_password = u'%s'%res[0]
+
+        if not ims.model.dbSysUser.dbSysUser().modifyPassword(cur_user.username, new_password):
+            QMessageBox.critical(self, u'error', u'修改密码失败')
+        else:
+            QMessageBox.information(self, u'error', u'密码已更新')
+
+
+
+
  #主函数
 if __name__ == '__main__':
     appp = QApplication(sys.argv)
@@ -312,6 +327,6 @@ if __name__ == '__main__':
         sys.exit(0)
     #显示主窗口
     window = DlgIMSMain()
-    window.setWindowTitle(u'UT库存管理系统')
+
     window.show()
     appp.exec_()
