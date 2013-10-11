@@ -42,3 +42,4 @@ if curdir != '':
     for filename in fileNeedCopys:
         print '=========copy %s to dist/%s'%(filename,filename)
         shutil.copyfile(filename,  'dist/%s'%filename)
+    shutil.move(curdir+u'\\dist\\__init__.exe', curdir+u'\\dist\\UT库存管理系统.exe')
