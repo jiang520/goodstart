@@ -11,7 +11,6 @@ from ims.model.dbClient import *
 from ims.ui.uiDlgRecordModify import *
 from ims.model.dbArticle import dbArticle
 from ims.DlgClient import DlgClient
-from IPython.core.display import Math
 from ims.DlgArticle import DlgArticle
 from ims.model.dbInoutRecord import *
 class DlgRecordModify(QDialog):

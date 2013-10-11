@@ -60,7 +60,7 @@ class DlgIMSMain(QMainWindow):
         self.__udpateArticleTreeView()     
         self.treeArticle.itemSelectionChanged.connect(self.__updateArticleCountList)
 
-        
+
     '''更新物品分类树'''
     def __initTreeCtrl_Article(self):               
         strListHeader = QStringList()
@@ -78,8 +78,8 @@ class DlgIMSMain(QMainWindow):
         self.tableViewRemain.setSelectionMode(QTableWidget.SingleSelection)
         self.tableViewRemain.setAlternatingRowColors(True)
 
-        
        
+        
         
     def __udpateArticleTreeView(self):
         self.treeArticle.clear()
@@ -88,7 +88,7 @@ class DlgIMSMain(QMainWindow):
         item.setText(0,u'显示所有')
         item.setText(1,u'-1')
         self.treeArticle.addTopLevelItem(item)
-                 
+
         listTypes1 = dbArticleType().getType1() 
         '''插入类别1'''       
         for t1 in listTypes1:
@@ -329,4 +329,7 @@ if __name__ == '__main__':
     window = DlgIMSMain()
 
     window.show()
+    
     appp.exec_()
+
+
