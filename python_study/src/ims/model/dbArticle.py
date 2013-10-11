@@ -45,6 +45,7 @@ class dbArticle:
         a.detail    = item[6]   
         return a
 
+
     '''根据物品类型和型号(字符串)查找物品信息'''
     def getByTypeAndModel(self, typeid, model):
         sql = '''SELECT "id", "typeid", "model", "packaging", 
