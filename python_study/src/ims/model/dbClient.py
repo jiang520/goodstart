@@ -11,7 +11,7 @@ class Client:
     phone = ''
     mobile = ''
     boss = ''
-    clienttype = ''
+    type = ''
     detail = ''
 
 class dbClient():
@@ -24,19 +24,20 @@ class dbClient():
         list = []
         for item in cursor.fetchall():
             a = Client()
-            a.id = item[0]
-            a.name=item[1]
-            a.address = item[2]
-            a.phone=item[3]
-            a.mobile=item[4]
-            a.boss = item[5]
-            a.clienttype=item[6]
-            a.detail=item[7]
+            a.id        = item[0]
+            a.name      = item[1]
+            a.address   = item[2]
+            a.phone     = item[3]
+            a.mobile    = item[4]
+            a.boss      = item[5]
+            a.type      = item[6]
+            a.detail    = item[7]
             list.append(a)
         return list
         
     def getById(self, clientid):
-        sql = '''SELECT "id", "name", "address", "phone", "mobile", "boss", "clienttype", "detail" FROM "tbClient" where id = %d'''%clientid
+        sql = '''SELECT "id", "name", "address", "phone", "mobile", "boss", "clienttype", "detail"
+                FROM "tbClient" where id = %d'''%clientid
         con = dbActicleIMS.getInstance().getConnection()
         cursor  = con.execute(sql)
         if cursor == None:  return None
@@ -49,7 +50,7 @@ class dbClient():
         a.phone     = item[3]
         a.mobile    = item[4]
         a.boss      = item[5]
-        a.clienttype= item[6]
+        a.type      = item[6]
         a.detail    = item[7]
         return a
         
@@ -61,7 +62,7 @@ class dbClient():
                                                  client.phone,
                                                  client.mobile,
                                                  client.boss,
-                                                 client.clienttype,
+                                                 client.type,
                                                  client.detail)
         print sql
         try:
@@ -88,7 +89,7 @@ class dbClient():
                                                  client.phone,
                                                  client.mobile,
                                                  client.boss,
-                                                 client.clienttype,
+                                                 client.type,
                                                  client.detail,
                                                  id,
                                                  )

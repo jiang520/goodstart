@@ -24,6 +24,7 @@ class DlgClient(QDialog):
         self.ui.setupUi(self)
         self.resize(600,400)
         self.tableView = self.ui.tableView
+        self.tableView.setSortingEnabled(True)
         self.__initTableView()  
         self.ui.pushButton_add.clicked.connect(self.slotAddClient)
         self.ui.pushButton_modify.clicked.connect(self.slotModifyClient)
@@ -114,32 +115,34 @@ class DlgClient(QDialog):
         clientlist  = dbClient().getAll()
         model = QStandardItemModel(len(clientlist),8, self)
         lablelist = QStringList()
-        lablelist.append(u'系统编号')
+        lablelist.append(u'编号')
         lablelist.append(u'公司/单位名称')
+        lablelist.append(u'客户类型')
         lablelist.append(u'地址')
         lablelist.append(u'联系人')
-        lablelist.append(u'电话')        
+        lablelist.append(u'电话')
         lablelist.append(u'手机')
-        lablelist.append(u'客户类型')
         lablelist.append(u'备注')
         model.setHorizontalHeaderLabels(lablelist)
         i = 0
         for cli in clientlist:
             model.setItem(i, 0, QStandardItem('%d'%cli.id))
             model.setItem(i, 1, QStandardItem('%s'%cli.name))
-            model.setItem(i, 2, QStandardItem('%s'%cli.address))
-            model.setItem(i, 3, QStandardItem('%s'%cli.boss))
-            model.setItem(i, 4, QStandardItem('%s'%cli.phone))
-            model.setItem(i, 5, QStandardItem('%s'%cli.mobile))  
-            model.setItem(i, 6, QStandardItem('%s'%cli.clienttype))  
-            model.setItem(i, 7, QStandardItem('%s'%cli.detail))             
+            model.setItem(i, 2, QStandardItem('%s'%cli.type))
+            model.setItem(i, 3, QStandardItem('%s'%cli.address))
+            model.setItem(i, 4, QStandardItem('%s'%cli.boss))
+            model.setItem(i, 5, QStandardItem('%s'%cli.phone))
+            model.setItem(i, 6, QStandardItem('%s'%cli.mobile))
+            model.setItem(i, 7, QStandardItem('%s'%cli.detail))
             i=i+1 
         oldIndex = self.tableView.currentIndex()    
         self.tableView.setModel(model)
         self.tableView.selectRow(oldIndex.row())
         self.tableView.setFocus()
-        for i in range(model.rowCount()):
-            self.tableView.setRowHeight(i,20)        
+        #设置行高
+        for i in range(model.rowCount()): self.tableView.setRowHeight(i,20)
+        self.tableView.setColumnWidth(0, 40)
+
 if __name__ == '__main__':
     appp = QApplication(sys.argv)
     window = DlgClient(None)

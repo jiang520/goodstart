@@ -31,7 +31,7 @@ class dbInOutRecord:
             strFilter2 = ''' and time >= '%s' and time <= '%s' '''%(strDateStart, strDateEnd)
         if articleid!=None:
             strFilterArticle = ''' and articleid=%d '''%articleid        
-        sql = '''SELECT tbInOutRecord.id, "articleid", "model","time", "count", "price", "recordid", "clientid", "tbInOutRecord.detail"  
+        sql = '''SELECT tbInOutRecord.id, "articleid", "model","time", "count", "price", "recordid", "clientid", tbInOutRecord.detail
                     FROM tbInOutRecord left join tbArticle on tbInOutRecord.articleid=tbArticle.id
                     where 1=1 %s %s %s
                     limit %d,%d'''%(strFilter1, strFilter2, strFilterArticle, start,end)
