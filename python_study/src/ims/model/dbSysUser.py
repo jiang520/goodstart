@@ -9,13 +9,13 @@ class SysUser:
         self.username = ''
         self.password = ''
         self.id = 0
-        self.usertype = u'reader'
+        self.usertype = u'游客'
 
     #可以修改内容
     def is_enable_write_all(self):
-        if self.usertype == u'writer':
-            return  True
-        return  False
+        #print self.usertype, self.usertype == u'管理员'
+        return self.usertype == u'管理员'
+
     def is_enable_read_all(self):
         return  True
 
@@ -59,7 +59,32 @@ class dbSysUser:
         strEncodePass = strEncodePass.strip()
         if len(strEncodePass) > 100: return False
         sql = ''' insert into tbSysUser (username, password,usertype)
-                        values('%s','%s')'''%(userinfo.username, strEncodePass, userinfo.usertype)
+                        values('%s','%s','%s')'''%(userinfo.username, strEncodePass, userinfo.usertype)
+        print sql
+        try:
+            print sql
+            con = dbActicleIMS.getInstance().getConnection()
+            con.execute(sql)
+            con.commit()
+            return True
+        except Exception, e:
+            print e
+            return  False
+
+    def modifyUser(self, oldusername, userinfo):
+        if len(oldusername) < 1: return  False
+        if len(userinfo.username) > 50:return  False
+        if len(userinfo.usertype) <= 0: return  False
+        strEncodePass = base64.encodestring(userinfo.password)
+        strEncodePass = strEncodePass.strip()
+        if len(strEncodePass) > 100: return False
+        sql = ''' update tbSysUser set username='%s',
+                                       password='%s',
+                                       usertype='%s'
+                                       where username='%s' '''%(userinfo.username,
+                                                        strEncodePass,
+                                                        userinfo.usertype,
+                                                        oldusername)
         print sql
         try:
             print sql
@@ -73,6 +98,8 @@ class dbSysUser:
 
     #修改用户信息
     def modifyPassword(self, username, password):
+        password = password.strip()
+        if len(password) < 4: return
         try:
             strEncodePass = base64.encodestring(password)
             strEncodePass = strEncodePass.strip()
@@ -100,6 +127,8 @@ class dbSysUser:
          except Exception, e:
             print e
             return  False
+
+
     def get_all_users(self):
         sql = ''' select id,username, usertype from tbSysUser '''
         print sql
@@ -114,6 +143,20 @@ class dbSysUser:
             user.usertype = item[2]
             usrlist.append(user)
         return  usrlist
+    def get_user_by_username(self,username):
+        sql = ''' select id,username, usertype from tbSysUser where username='%s' '''%username
+        print sql
+        con = dbActicleIMS.getInstance().getConnection()
+        cursor = con.execute(sql)
+        if cursor is None: return
+        item = cursor.fetchone()
+        if item == None: return
+        user = SysUser()
+        user.id = int(item[0])
+        user.username = item[1]
+        user.usertype = item[2]
+        return  user
+
 
 
  #主函数

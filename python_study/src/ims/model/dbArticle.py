@@ -14,6 +14,7 @@ class Article:
         self.pingpai    = u''#品牌
         self.function   = u''#功能说明
         self.detail     = u''#详细信息
+        self.unit       = u'个'#物品单位
 
 class ArticleRemainInfo:
     def __init__(self):
@@ -28,7 +29,7 @@ class dbArticle:
 
     '''根据物品id查找物品信息'''
     def getById(self, articleid):
-        sql = '''SELECT id, typeid, model, packaging, pingpai, function, detail FROM tbArticle where id=%d'''%articleid
+        sql = '''SELECT id, typeid, model, packaging, pingpai, function, detail,unit FROM tbArticle where id=%d'''%articleid
         print sql
         con = dbActicleIMS.getInstance().getConnection()
         cursor = con.execute(sql)
@@ -42,14 +43,15 @@ class dbArticle:
         a.packaging = item[3]
         a.pingpai   = item[4]
         a.function  = item[5]
-        a.detail    = item[6]   
+        a.detail    = item[6]
+        a.unit      = item[7]
         return a
 
 
     '''根据物品类型和型号(字符串)查找物品信息'''
     def getByTypeAndModel(self, typeid, model):
         sql = '''SELECT "id", "typeid", "model", "packaging", 
-            "pingpai", "function", "detail" FROM "tbArticle"  where typeid=%d and model='%s' '''%(typeid, model);
+            "pingpai", "function", "detail", unit FROM "tbArticle"  where typeid=%d and model='%s' '''%(typeid, model);
         con = dbActicleIMS.getInstance().getConnection()
         cursor = con.execute(sql)
         item = cursor.fetchone()
@@ -63,13 +65,14 @@ class dbArticle:
         a.packaging = item[3]
         a.pingpai   = item[4]
         a.function  = item[5]
-        a.detail    = item[6]   
+        a.detail    = item[6]
+        a.unit      = item[7]
         return a
 
     '''查找所有物品信息'''
     def getAll(self):
         sql = '''SELECT "id", "typeid", "model", "packaging", 
-            "pingpai", "function", "detail" FROM "tbArticle" ''';
+            "pingpai", "function", "detail","unit" FROM "tbArticle" ''';
         con = dbActicleIMS.getInstance().getConnection()
         cusor = con.execute(sql)
         list = []
@@ -81,13 +84,14 @@ class dbArticle:
             a.packaging = item[3]
             a.pingpain  = item[4]
             a.fuction   = item[5]
-            a.detail    = item[6]            
+            a.detail    = item[6]
+            a.unit      = item[7]
             list.append(a)
         return list
 
     '''查找指定具体类型的物品列表数据'''
     def getArticlesByTypeId(self, typeid):
-        sql = '''SELECT "id", "model", "packaging","pingpai", "function", "detail" FROM "tbArticle" where typeid=%d'''%typeid;
+        sql = '''SELECT "id", "model", "packaging","pingpai", "function", "detail" ,"unit" FROM "tbArticle" where typeid=%d'''%typeid;
         con = dbActicleIMS.getInstance().getConnection()
         cusor = con.execute(sql)
         list = []
@@ -99,7 +103,8 @@ class dbArticle:
             a.packaging = item[2]
             a.pingpain  = item[3]
             a.fuction   = item[4]
-            a.detail    = item[5]            
+            a.detail    = item[5]
+            a.unit      = itme[6]
             list.append(a)
         return list
         
@@ -115,13 +120,15 @@ class dbArticle:
                                             "packaging",
                                             "pingpai", 
                                             "function", 
-                                            "detail") 
-                values(%d,'%s','%s','%s','%s','%s')'''%(article.typeid, 
+                                            "detail",
+                                            "unit")
+                values(%d,'%s','%s','%s','%s','%s','%s')'''%(article.typeid,
                                                       article.model,
                                                       article.packaging,
                                                       article.pingpai,
                                                       article.function,
-                                                      article.detail)
+                                                      article.detail,
+                                                      article.unit)
         print sql        
         try:
             con = dbActicleIMS.getInstance().getConnection()           
@@ -140,14 +147,16 @@ class dbArticle:
                                             model='%s', 
                                             packaging='%s',
                                             pingpai='%s', 
-                                            function='%s', 
-                                            detail='%s' where id = %d '''%(
+                                            function='%s',
+                                            detail='%s'
+                                             unit='%s' where id = %d '''%(
                                               article.typeid,
                                               article.model,
                                               article.packaging,
                                               article.pingpai,
                                               article.function,
                                               article.detail,
+                                              article.unit,
                                               article.id)
             print sql
             con.execute(sql) 

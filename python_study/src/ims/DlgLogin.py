@@ -22,11 +22,11 @@ class DlgLogin(QDialog):
         self.ui.setupUi(self)
         self.setWindowTitle(u'欢迎使用')
         self.__initUserNameList()
-        self.ui.commandLinkButton_register.clicked.connect(self.slotRegister)
+        #self.ui.commandLinkButton_register.clicked.connect(self.slotRegister)
         self.ui.pushButton_load.clicked.connect(self.slotLogin)
         #self.setStyleSheet('backgroud-image:images/bkgnd.jpg')
-
-
+        self.setStyleSheet("QDialog{ border-image : url('images/bkgnd.jpg')}" );
+        self.setFixedSize(500, 320)
 
     #初始化用户名列表
     def __initUserNameList(self):
@@ -58,12 +58,11 @@ class DlgLogin(QDialog):
         userinfo.username = strUserName
         userinfo.password = strPass
         res = dbSysUser().isValidUser(userinfo)
-        print 'res = ',res
         if not res:
             QMessageBox.critical(self, 'info', u'帐户或密码输误错误')
             self.ui.lineEdit_pass.setFocus()
         else:
-            ims.model.dbSysUser.g_current_user = userinfo
+            ims.model.dbSysUser.g_current_user = dbSysUser().get_user_by_username(userinfo.username)
             self.accept()
 
 if __name__=="__main__":

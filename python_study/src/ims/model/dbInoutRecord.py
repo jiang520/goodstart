@@ -18,6 +18,7 @@ class InOutRecord:
         self.clientid = 0
         self.articleid = 0
         self.model = u''
+        self.unit = u''
     def __str__(self):
         return '<InOurRecord object(id=%d)>'%self.id
         
@@ -31,7 +32,7 @@ class dbInOutRecord:
             strFilter2 = ''' and time >= '%s' and time <= '%s' '''%(strDateStart, strDateEnd)
         if articleid!=None:
             strFilterArticle = ''' and articleid=%d '''%articleid        
-        sql = '''SELECT tbInOutRecord.id, "articleid", "model","time", "count", "price", "recordid", "clientid", tbInOutRecord.detail
+        sql = '''SELECT tbInOutRecord.id, "articleid", "model","time", "count", "unit", "price", "recordid", "clientid", tbInOutRecord.detail
                     FROM tbInOutRecord left join tbArticle on tbInOutRecord.articleid=tbArticle.id
                     where 1=1 %s %s %s
                     limit %d,%d'''%(strFilter1, strFilter2, strFilterArticle, start,end)
@@ -42,14 +43,15 @@ class dbInOutRecord:
         for item in  cursor.fetchall():
             record          = InOutRecord()
             record.id       = int(item[0])
-            record.articleid=int(item[1])
+            record.articleid= int(item[1])
             record.model    = item[2]
             record.time     = item[3]
             record.count    = float(item[4])
-            record.price    = float(item[5])
-            record.number   = item[6]
-            record.clientid = int(item[7])
-            record.detail   = item[8]
+            record.unit     = item[5]
+            record.price    = float(item[6])
+            record.number   = item[7]
+            record.clientid = int(item[8])
+            record.detail   = item[9]
             listRes.append(record)
         return listRes
     

@@ -26,7 +26,7 @@ class dbActicleIMS(object):
     def createDataBase(self):
         import sys
         import os
-        self.__dbFilePath = os.getcwd()+u"\\ims_acticle.db3"
+        self.__dbFilePath = u"%s\\ims_acticle.db3"%os.getcwdu()
         print self.__dbFilePath
         print '======open data base at path:%s'%self.__dbFilePath
         self.con = sqlite3.connect(self.__dbFilePath)
@@ -95,14 +95,3 @@ class dbActicleIMS(object):
 
     def getDatabaseFilePath(self):
         return  self.__dbFilePath
-    
-if __name__=="__main__":
-    a = dbActicleIMS.getInstance()
-    b = dbActicleIMS.getInstance()
-    b.a = 3
-    print b.a
-    print a.a
-    print id(a)
-    print id(b)
-    print a.getAllArticleRemainList()
-    print a.getSpecArticleRemainList(4)

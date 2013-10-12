@@ -128,6 +128,7 @@ class DlgIMSMain(QMainWindow):
         self.action_export_record = QAction(u'导出出库库记录列表', self)
         self.action_about         = QAction(u'关于', self)
         self.action_change_pass   = QAction(u'修改密码', self)
+        self.action_admin         = QAction(u'帐户管理', self)
 
         self.action_client.triggered.connect(self.slotDlgClient)
         self.action_exit.triggered.connect(self.close)
@@ -140,6 +141,7 @@ class DlgIMSMain(QMainWindow):
         self.action_export_remain.triggered.connect(self.slotExportRemain)
         self.action_export_record.triggered.connect(self.slotExportRecord)
         self.action_change_pass.triggered.connect(self.slotChangePassword)
+        self.action_admin.triggered.connect(self.slotAdmin)
 
         menubar = self.menuBar()
         menufile = QMenu(u"文件",self)
@@ -157,6 +159,8 @@ class DlgIMSMain(QMainWindow):
 
         menuUser = QMenu(u'帐户设置',self)
         menuUser.addAction(self.action_change_pass)
+        menuUser.addSeparator()
+        menuUser.addAction(self.action_admin)
 
         menubar.addMenu(menufile)
         menubar.addMenu(menuTools)
@@ -207,6 +211,14 @@ class DlgIMSMain(QMainWindow):
         QMessageBox.about(self,u'库存管理系统',
                           u'''UT库存管理系统,基于python2.7和pyqt4.8构建,\n版权所有,欢迎使用''')
 
+    def slotAdmin(self):
+        res = QInputDialog.getText(self, u'系统管理', u'请输入管理员密码', QLineEdit.Password)
+        if not res[0]: return
+        #if res[1] != u'ut123654': return
+        from ims.DlgSysUserAdmin import DlgSysUserAdmin
+        dlg = DlgSysUserAdmin(self)
+        dlg.setModal(True)
+        dlg.exec_()
 
     def __getArticleCountListLabels(self):
         labels = QStringList()

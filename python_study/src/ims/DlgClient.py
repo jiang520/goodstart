@@ -121,6 +121,7 @@ class DlgClient(QDialog):
         
     '''更新表格内容'''    
     def updateTableWidget(self):
+        self.ui.tableView.setModel(None)
         clientlist  = dbClient().getAll()
         model = QStandardItemModel(len(clientlist),8, self)
         lablelist = QStringList()
