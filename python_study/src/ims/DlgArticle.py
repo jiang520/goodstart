@@ -4,6 +4,7 @@ Created on 2013-9-27
 
 @author: Administrator
 '''
+from ims.DlgArticleChange import DlgArticleChange
 from ui import uiDlgArticle
 import sys
 import ims
@@ -23,28 +24,34 @@ class DlgArticle(QDialog):
     @param bForChoose 指定此窗口是否是物品选择窗口
     '''
     def __init__(self, parent=None,  bForChoose=False):
-        super(DlgArticle,self).__init__(parent)                
+        super(DlgArticle,self).__init__(parent)
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
-        self.__bForChoose = bForChoose
-        self.__articleSelected = None
-        self.ui.textEdit_detail.setText('')
-        self.ui.lineEdit_function.setText('')
-        self.ui.lineEdit_pp.setText('')
         self.setWindowTitle(u'物品信息')
+        self.ui.treeWidget.setMaximumWidth(150)
         self.__updateArticleTree()
-        self.__initType1list()
+        self.__updateArticleList()
+
         #连接信号和糟
-        self.ui.pushButton_addtype1.clicked.connect(self.slotAddType1)
-        self.ui.pushButton_addtype2.clicked.connect(self.slotAddType2)
-        self.ui.pushButton_add.clicked.connect(self.slotModifyArticle)
+        #用于选择时,双击选中物品,否则弹出物品信息修改窗口
+        self.__bForChoose = bForChoose
+        if self.__bForChoose:
+            self.ui.tableView.doubleClicked.connect(self.slotChoosed)
+        else:
+            self.ui.tableView.doubleClicked.connect(self.slotModifyArticle)
+
+        self.ui.pushButton_add.clicked.connect(self.slotAddArticle)
         self.ui.pushButton_cancel.clicked.connect(self.close)
-        self.ui.comboBox_type1.currentIndexChanged[int].connect(self.slotType1changed)
+        self.ui.pushButton_2.clicked.connect(self.slotDelArticle)
         self.ui.treeWidget.currentItemChanged.connect(self.slotArticleItemChanged)
         self.ui.treeWidget.itemPressed[QTreeWidgetItem, int].connect(self.slotContextMenu)
         self.ui.treeWidget.setStyleSheet( "QTreeView::item:hover{background-color:rgb(0,255,0,50)} "
                                           "QTreeView:item{border-bottom:1px solid #999999;border-right:1px solid #999999}"
                                           "QTreeView::item:selected{background-color:rgb(255,0,0,100)}");
+        self.ui.tableView.setEditTriggers(QTableWidget.NoEditTriggers)
+        self.ui.tableView.setSelectionBehavior(QTableWidget.SelectRows)
+        self.ui.tableView.setSelectionMode(QTableWidget.SingleSelection)
+        self.ui.tableView.setAlternatingRowColors(True)
 
         '''如果此窗口用于选择物品'''        
         if bForChoose:
@@ -57,19 +64,15 @@ class DlgArticle(QDialog):
             self.ui.pushButton_ok.clicked.connect(self.slotChoosed)
         else:
             self.ui.pushButton_ok.hide()
-        '''选择编辑框不显示/隐藏编辑栏'''
-        self.ui.checkBox_setedit.clicked[bool].connect(self.setEditing)
-        self.setEditing(False)
 
     '''选中一项物品'''
     def slotChoosed(self):
-        item = self.ui.treeWidget.currentItem()
-        if not item: return
-        itemData = self.__getItemIdDepth__(item)
-        if itemData != None and itemData[1]==3:
-            self.__articleSelected = dbArticle().getById(itemData[0])
-            self.accept()
-    '''返回选中的物品信息'''
+        article_id = self.__get_selected_article_id()
+        if article_id is None: return
+        self.__articleSelected = dbArticle().getById(article_id)
+        self.accept()
+
+    #返回选中的物品
     def getSelectedArticle(self):
         return  self.__articleSelected
         
@@ -82,7 +85,7 @@ class DlgArticle(QDialog):
             self.slotArticleItemChanged()
     '''右键弹出菜单'''
     def slotContextMenu(self, item, col):
-        if not ims.model.dbSysUser.g_current_user.is_enable_write_all():return
+        #if not ims.model.dbSysUser.g_current_user.is_enable_write_all():return
         if qApp.mouseButtons() == Qt.LeftButton: return
         res = item.data(0, Qt.UserRole+1).toInt()
         if not res[1]:return
@@ -92,7 +95,6 @@ class DlgArticle(QDialog):
         action_rename   = QAction(QString(u'改名'), self)
         action_del      = QAction(QString(u'删除'), self)
         action_edit     = QAction(QString(u'编辑'), self)
-        action_edit.setChecked(self.ui.checkBox_setedit.isChecked())
         action_addchild = QAction(QString(u'新增子项'), self)
         '''产生菜单,物品节点和类别节点对应菜单不一样'''
         if depth != 3:
@@ -201,42 +203,28 @@ class DlgArticle(QDialog):
     '''DELETE键删除物品节点,类别节点'''
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Delete:
-            self.slotDel()
+            self.slotDelArticle()
             return
         return QDialog.keyPressEvent(self, event) 
          
     '''添加物品分类'''
-    def slotAdd(self):
+    def slotAddType(self):
         #权限检查
-        if not ims.model.dbSysUser.g_current_user.is_enable_write_all():return
-
+        #if not ims.model.dbSysUser.g_current_user.is_enable_write_all():return
         item = self.ui.treeWidget.currentItem()
         if item == None:return
         itemData = self.__getItemIdDepth__(item)
         if itemData == None : return       
-        if itemData[1]==1:
-            parentid = 0
-            self.__AddType(parentid)
-        elif itemData[1] == 2:
-            parentItemData = self.__getItemIdDepth__(item.parent())
-            if parentItemData==None: return
-            parentid = parentItemData[0]
-            self.__AddType(parentid)
-        else:
-            parentItemData = self.__getItemIdDepth__(item.parent())
-            if parentItemData==None: return
-            parentid = parentItemData[0]
-            self.__AddArticle(parentid, item.parent())        
-            
-    def slotEdit(self):
-        bEditing = self.ui.checkBox_setedit.isChecked()
-        self.ui.checkBox_setedit.setChecked(not bEditing)  
-        self.setEditing(not bEditing)
+        if itemData[1] != 2:return
+        dlg = DlgArticleChange(self)
+        dlg.setModal(True)
+        dlg.exec_()
+
+
 
     '''删除物品分类'''        
-    def slotDel(self):
+    def slotDelType(self):
         if not ims.model.dbSysUser.g_current_user.is_enable_write_all():return
-
         item = self.ui.treeWidget.currentItem()        
         if  item.child(0) :
             QMessageBox.critical(self, u'error', u'需先删除所有子项!')
@@ -254,13 +242,8 @@ class DlgArticle(QDialog):
             #print 'del type'
             if dbArticleType().delete(id):
                 item.parent().removeChild(item)
-        else:
-            '''depth = 3'''
-            #print 'del article'
-            if dbArticle().delete(id):       
-                item.parent().removeChild(item)
-            else:
-                print 'del article faield'
+
+
 
     '''对物品类型节点改名'''
     def slotRename(self):
@@ -286,80 +269,58 @@ class DlgArticle(QDialog):
         
     '''物品列表中选择一项时'''   
     def slotArticleItemChanged(self):
-        self.ui.groupBox.setEnabled(False)
-        item = self.ui.treeWidget.currentItem()        
+        item = self.ui.treeWidget.currentItem()
         if not item : return
         #获取节点的深度,id信息
-        res = self.__getItemIdDepth__(item) 
-        if not res: 
+        res = self.__getItemIdDepth__(item)
+        if not res:
             print 'item data is error'
             return
         '''如果未选中物品节点,则不做任何操作'''
-        if res[1] != 3:
+        if res[1] != 2:
             #print 'item data-depth !=3'
             return
-        '''不是编辑状态也不更新右侧的数据信息'''
-        if not self.ui.checkBox_setedit.isChecked():
-            return
-        articleid = res[0]
-        #查找物品信息,并更新到右侧列表中
-        self.__articleSelected = dbArticle().getById(articleid)
-        if not self.__articleSelected: return
-        '''更新右侧的combobox 下拉列表选中项'''
-        strType1 = item.parent().parent().text(0)
-        strType2 = item.parent().text(0)
-        for i in range(self.ui.comboBox_type1.count()):
-            if self.ui.comboBox_type1.itemText(i) == strType1:
-                self.ui.comboBox_type1.setCurrentIndex(i)
-        self.__initType2list() 
-        for i in range(self.ui.comboBox_type2.count()):
-            if self.ui.comboBox_type2.itemText(i) == strType2:
-                self.ui.comboBox_type2.setCurrentIndex(i)
-        '''更新编辑框信息'''
-        self.ui.lineEdit_function.setText(self.__articleSelected.function)
-        self.ui.lineEdit_model.setText(self.__articleSelected.model)
-        self.ui.lineEdit_pkg.setText(self.__articleSelected.packaging)
-        self.ui.lineEdit_pp.setText(self.__articleSelected.pingpai)
-        self.ui.textEdit_detail.setText(self.__articleSelected.detail)
-        self.ui.groupBox.setEnabled(True)
-        self.ui.pushButton_add.setEnabled(True)
-        '''权限检查,不允许修改物品信息,或添加类型'''
-        if not ims.model.dbSysUser.g_current_user.is_enable_write_all():
-            self.ui.pushButton_addtype1.setEnabled(False)
-            self.ui.pushButton_addtype2.setEnabled(False)
-            self.ui.pushButton_add.setEnabled(False)
-
+        self.__updateArticleList()
         
     '''类别1更新了,就更新类别2列表'''   
     def slotType1changed(self):
         #print 'type 1 changed '
         self.__initType2list()
-        
+
+    def slotAddArticle(self):
+        #if not ims.model.dbSysUser.g_current_user.is_enable_write_all():return
+        dlg = DlgArticleChange(self)
+        dlg.setModal(True)
+        dlg.exec_()
+
+    def __get_selected_article_id(self):
+        cur_index = self.ui.tableView.currentIndex()
+        data = self.ui.tableView.model().index(cur_index.row(), 0).data()
+        res = data.toInt()
+        if not res[1]: return
+        return  res[0]
+
     '''修改物料信息到数据库'''
     def slotModifyArticle(self):
         #权限检查
-        if not ims.model.dbSysUser.g_current_user.is_enable_write_all():return
+        #if not ims.model.dbSysUser.g_current_user.is_enable_write_all():return
+        article_id = self.__get_selected_article_id()
+        if article_id is None: return
+        article = dbArticle().getById(article_id)
+        dlg = DlgArticleChange(self, article)
+        dlg.setModal(True)
+        dlg.exec_()
+        self.__updateArticleList()
 
-        article = Article()
-        res = self.ui.comboBox_type2.itemData(self.ui.comboBox_type2.currentIndex()).toInt()
-        if not res[1]:
-            print 'invadate combobox item data'
-            return 
-        article.typeid      = int(res[0])
-        article.detail      = u'%s'%self.ui.textEdit_detail.toPlainText()
-        article.function    = u'%s'%self.ui.lineEdit_function.text()
-        article.model       = u'%s'%self.ui.lineEdit_model.text()
-        article.packaging   = u'%s'%self.ui.lineEdit_pkg.text()
-        article.pingpai     = u'%s'%self.ui.lineEdit_pp.text()
-        article.id          = self.__articleSelected.id
-        if article.model == '':
-            self.ui.label_tips.setText(u"<span style='color:#ff0000'>型号不能为空</span>")            
-            self.ui.lineEdit_model.setFocus()
-            return
-        if not dbArticle().modify(article):
-            QMessageBox.warning(self, u'出错了', '修改物品信息失败')
-            return
-        self.__updateArticleTree()
+    #删除物品信息
+    def slotDelArticle(self):
+        article_id = self.__get_selected_article_id()
+        res = QMessageBox.warning(self, u'危险操作', u'确认从数据库中删除当前选中的物品信息?', QMessageBox.Yes|QMessageBox.No)
+        if res != QMessageBox.Yes: return
+        if dbArticle().delete(article_id):
+            self.__updateArticleList()
+        else:
+            QMessageBox.critical(self, u'出错了', u'删除操作执行出错')
     
     #添加类别1    
     def slotAddType1(self):
@@ -402,41 +363,13 @@ class DlgArticle(QDialog):
             QMessageBox.warning(self, u'doo', u'添加类别失败')        
         self.__initType2list()
         self.__updateArticleTree()
-    
-    '''更新类别1的列表'''    
-    def __initType1list(self):
-        self.ui.comboBox_type1.clear()
-        listTypes = dbArticleType().getType1()
-        for atype in listTypes:
-            str = u'%s'%atype.text
-            self.ui.comboBox_type1.addItem(str,atype.id)
-        self.__initType2list()
-        
-    '''#更新类别2的列表   ''' 
-    def __initType2list(self):
-        self.ui.pushButton_add.setEnabled(False)
-        self.ui.comboBox_type2.clear()
-        vtype1_id = self.ui.comboBox_type1.itemData(self.ui.comboBox_type1.currentIndex())
-        res = vtype1_id.toInt()
-        #print res
-        if not res[1]:
-            #print 'return'
-            return        
-        listTypes = dbArticleType().getType2(res[0])
-        for atype in listTypes:
-            str = u'%s'%atype.text
-            #print str
-            self.ui.comboBox_type2.addItem(str,atype.id)
-        self.ui.pushButton_add.setEnabled(self.ui.comboBox_type2.count() > 0)
+
+
 
     '''更新treeview控件'''    
     def __updateArticleTree(self):
         strListHeader = QStringList()
         strListHeader.append(u'分类/型号')
-        strListHeader.append(u'封装')        
-        strListHeader.append(u'品牌')
-        strListHeader.append(u'备注')
-        strListHeader.append(u'')
         self.ui.treeWidget.setHeaderLabels(strListHeader)
         self.ui.treeWidget.clear()
         listTypes1 = dbArticleType().getType1() 
@@ -448,6 +381,7 @@ class DlgArticle(QDialog):
             item.setData(0, Qt.UserRole,  t1.id)
             item.setData(0, Qt.UserRole+1, 1)            
             listType2 = dbArticleType().getType2(t1.id)
+            self.ui.treeWidget.addTopLevelItem(item)
             '''插入类别2 '''
             for t2 in listType2:
                 #print '-',t2.text
@@ -456,21 +390,43 @@ class DlgArticle(QDialog):
                 item2.setData(0, Qt.UserRole+0, t2.id)#id
                 item2.setData(0, Qt.UserRole+1, 2)#深度
                 item.addChild(item2)
-                articles = dbArticle().getArticlesByTypeId(t2.id)
-                '''插入物品型号'''
-                for ac in articles:
-                    item3 = QTreeWidgetItem()
-                    item3.setText(0, ac.model)
-                    item3.setData(0, Qt.UserRole+0, ac.id)
-                    item3.setData(0, Qt.UserRole+1, 3)
-                    item3.setText(1, ac.packaging)
-                    item3.setText(2, ac.pingpai)
-                    item3.setText(3, ac.detail)
-                    item2.addChild(item3)
-            self.ui.treeWidget.addTopLevelItem(item)
 
+    #更新物品表格中的物品列表
+    def __updateArticleList(self):
+        item = self.ui.treeWidget.currentItem()
+        type_id = None
+        if item != None:
+            res = item.data(0, Qt.UserRole).toInt()
+            if None != res[1]:
+                type_id = res[0]
+        if type_id != None:
+            article_list = dbArticle().getArticlesByTypeId(type_id)
+        else:
+            article_list = []
+        labels = [u'ID',u'型号/品名',u'单位',u'封装',u'功能',u'品牌',u'说明']
+        model = QStandardItemModel(len(article_list), len(labels), self)
+        model.setHorizontalHeaderLabels(QStringList(labels))
+        #更新物品列表
+        for i in range( len(article_list) ):
+            article = article_list[i]
+            model.setItem(i, 0, QStandardItem(QString(unicode(article.id))))
+            model.setItem(i, 1, QStandardItem(QString(unicode(article.model))))
+            model.setItem(i, 2, QStandardItem(QString(unicode(article.unit))))
+            model.setItem(i, 3, QStandardItem(QString(unicode(article.packaging))))
+            model.setItem(i, 4, QStandardItem(QString(unicode(article.function))))
+            model.setItem(i, 4, QStandardItem(QString(unicode(article.pingpai))))
+            model.setItem(i, 4, QStandardItem(QString(unicode(article.detail))))
+        self.ui.tableView.setModel(model)
+        for i in range( len(article_list)): self.ui.tableView.setRowHeight(i, 20)
+        self.ui.tableView.setColumnWidth(0, 20)
+        self.ui.tableView.setColumnWidth(2, 40)
 
 if __name__ == '__main__':
+    import ims
+    #ims.ui.ui2py.pyqt_ui_2_py()
+    user = ims.model.dbSysUser.SysUser()
+    user.usertype = u"管理员"
+    ims.model.dbSysUser.g_current_user = user
     appp = QApplication(sys.argv)
     window = DlgArticle(None)
     window.setModal(True)

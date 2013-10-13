@@ -101,52 +101,56 @@ class DlgRecordSearch(QDialog):
             if len(strNumber) <= 0:
                 strNumber = None
         #获取起始结束时间
+        dateInterval = None
         if self.ui.checkBox_date.isChecked():
             strDateStart = self.ui.dateEdit_start.text()
             strDateEnd = self.ui.dateEdit_end.text()
-        else:
-            strDateEnd = None
-            strDateStart = None
+            dateInterval = (strDateStart, strDateEnd)
+        strArticleModel = None
+        if self.ui.checkBox_model.isChecked():
+            strArticleModel = unicode(self.ui.lineEdit_model.text())
+            strArticleModel = strArticleModel.strip()
+
         #print strNumber, strDateEnd, strDateStart
         #获取组合查询结果
-        recordlist = dbInOutRecord().getRecord(0, 50, strNumber, strDateStart, strDateEnd,self.__articleid)
+        recordlist = dbInOutRecord().getRecord(strNumber=strNumber,
+                                               strArticleModel=strArticleModel,
+                                               strClientName=None,
+                                               dateInterval = dateInterval,
+                                               articleid=self.__articleid
+                                                )
         #更新tabe控件,必须指定parent为self/其他,否则退出有错
         model = QStandardItemModel(len(recordlist), 6, self)
         i = 0
         for item in recordlist:
             model.setItem(i, 0, QStandardItem(QString(str(item.id))))
-            model.setItem(i, 1, QStandardItem(QString(str(item.model) )) )
-            model.setItem(i, 2, QStandardItem(QString('%s'%item.time)))
+            articleInfo = item.getArticleInfo()
+            clientInfo  = item.getClientInfo()
+            if articleInfo != None:
+                model.setItem(i, 1, QStandardItem(QString(unicode(articleInfo.model) )) )
+                model.setItem(i, 5, QStandardItem(QString(u'%s'%articleInfo.unit )))
+            model.setItem(i, 2, QStandardItem(QString(u'%s'%item.time)))
             model.setItem(i, 3, QStandardItem(QString( item.count < 0  and u'出库' or u'入库')))
             model.setItem(i, 4, QStandardItem(QString(str(item.count))))
-            model.setItem(i, 5, QStandardItem(QString(str(item.unit) )))
             model.setItem(i, 6, QStandardItem(QString(str(item.price))))
-            model.setItem(i, 7, QStandardItem(QString('%f'%(item.count*item.price))))
+            model.setItem(i, 7, QStandardItem(QString(u'%f'%(item.count*item.price))))
             model.setItem(i, 8, QStandardItem(QString(item.number)))
             model.setItem(i, 9, QStandardItem(QString(item.detail)))
+            if clientInfo!=None:
+                model.setItem(i, 10, QStandardItem(QString(clientInfo.name)))
             self.ui.tableView.setRowHeight(i,10)
             i=i+1
         #table控件的标题头
-        labels = QStringList()
-        labels.append(QString(u'id'))
-        labels.append(QString(u'型号'))
-        labels.append(QString(u'日期'))
-        labels.append(QString(u'出入库'))
-        labels.append(QString(u'数量'))
-        labels.append(QString(u'单位'))
-        labels.append(QString(u'单价'))        
-        labels.append(QString(u'金额'))
-        labels.append(QString(u'货单号'))
-        labels.append(QString(u'详情'))
+        strHeadLabels = [u'id',u'型号',u'日期', u'出入库', u'数量', u'单位', u'单价', u'金额', u'货单号',u'详细',u'客户/供货商']
+        labels = QStringList(strHeadLabels)
         model.setHorizontalHeaderLabels(labels)
         self.ui.tableView.setModel(model)
         #设置行高,列宽
-        for i in range(model.rowCount(parent=QModelIndex())):
-            self.ui.tableView.setRowHeight(i, 20)
-        for i in range(7):
-            self.ui.tableView.setColumnWidth(i, 80)
+        for i in range(model.rowCount(parent=QModelIndex())):self.ui.tableView.setRowHeight(i, 20)
+        for i in range(7): self.ui.tableView.setColumnWidth(i, 80)
         self.ui.tableView.setColumnWidth(0, 40)
         self.ui.tableView.setColumnWidth(3, 40)
+        self.ui.tableView.setColumnWidth(5, 40)
         self.ui.tableView.setColumnWidth(7, 150)
             
         

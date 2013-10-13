@@ -104,7 +104,7 @@ class dbArticle:
             a.pingpain  = item[3]
             a.fuction   = item[4]
             a.detail    = item[5]
-            a.unit      = itme[6]
+            a.unit      = item[6]
             list.append(a)
         return list
         
@@ -143,13 +143,14 @@ class dbArticle:
     def modify(self, article):
         try:
             con = dbActicleIMS.getInstance().getConnection()
-            sql = '''update tbArticle set   typeid=%d,
-                                            model='%s', 
+            sql = '''update tbArticle set   typeid   =%d,
+                                            model    ='%s',
                                             packaging='%s',
-                                            pingpai='%s', 
-                                            function='%s',
-                                            detail='%s'
-                                             unit='%s' where id = %d '''%(
+                                            pingpai  ='%s',
+                                            function ='%s',
+                                            detail   ='%s',
+                                            unit     ='%s'
+                                            where id = %d '''%(
                                               article.typeid,
                                               article.model,
                                               article.packaging,

@@ -41,7 +41,7 @@ class DlgClient(QDialog):
         self.updateTableWidget()
 
         #权限限制
-        if not ims.model.dbSysUser.g_current_user.is_enable_write_all():
+        if not ims.model.dbSysUser.g_current_user or ims.model.dbSysUser.g_current_user.is_enable_write_all():
             self.ui.pushButton_add.setEnabled(False)
             self.ui.pushButton_del.setEnabled(False)
             self.ui.pushButton_modify.setEnabled(False)
@@ -118,6 +118,7 @@ class DlgClient(QDialog):
         self.tableView.setSelectionBehavior(QTableWidget.SelectRows)
         self.tableView.setSelectionMode(QTableWidget.SingleSelection)        
         self.tableView.setAlternatingRowColors(True)
+
         
     '''更新表格内容'''    
     def updateTableWidget(self):

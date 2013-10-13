@@ -33,7 +33,6 @@ class DlgRecordModify(QDialog):
         self.ui.radioButton_in.setEnabled(False)
         #设置结果
         self.ui.label_tips.setText('')
-        self.ui.lineEdit_articleid.setEnabled(False)
         self.ui.lineEdit_articlename.setEnabled(False)
         #连接信号与槽
         self.ui.pushButton_new.clicked.connect(self.slotSelectArticle)
@@ -41,6 +40,8 @@ class DlgRecordModify(QDialog):
         self.ui.pushButton_selectclient.clicked.connect(self.slotSelectClient)
         self.ui.pushButton_cancel.clicked.connect(self.close)
         self.ui.pushButton_reset.clicked.connect(self.slotReset)
+        self.__article = None
+        self.__client = None
         self.__oldRecord = oldRecord
         self.setRecord(oldRecord)
     '''弹出窗口选择物品信息'''
@@ -49,9 +50,8 @@ class DlgRecordModify(QDialog):
         dlg.setModal(True)
         if QDialog.Accepted!=dlg.exec_():
             return
-        article = dlg.getSelectedArticle()
-        self.ui.lineEdit_articleid.setText(str(article.id))
-        self.ui.lineEdit_articlename.setText(article.model)
+        self.__article = dlg.getSelectedArticle()
+        self.ui.lineEdit_articlename.setText(self.__article.model)
 
     '''弹出窗口选择客户'''
     def slotSelectClient(self):
@@ -68,7 +68,6 @@ class DlgRecordModify(QDialog):
 
     '''将进出货记录信息反映到界面上'''
     def setRecord(self,oldRecord):
-        self.ui.lineEdit_articleid.setText('%d'%oldRecord.articleid)
         articleInfo = dbArticle().getById(oldRecord.articleid)
         #物品信息初始值
         if articleInfo!=None:
@@ -99,20 +98,19 @@ class DlgRecordModify(QDialog):
     def slotModifyRecord(self):
         record = InOutRecord()
         record.id = self.__oldRecord.id
-        strid = self.ui.lineEdit_articleid.text()
-        if strid == '' :
-            self.ui.label_tips.setText(u'''<span style='color:#ff0000'>未选择具体物品型号</span>''')
-            return
-        record.articleid = int(strid)
-        record.model = u'%s'%self.ui.lineEdit_articlename.text()
-        record.count = float(self.ui.lineEdit_count.text())
-        record.detail = u'%s'%self.ui.textEdit_detail.toPlainText()
-        record.price = float(self.ui.lineEdit_price.text())
-        record.time = self.ui.dateEdit.text()
-        record.number = u'%s'%self.ui.lineEdit_number.text()
+        if self.__article != None:
+            record.articleid = self.__article.id
+            record.model     = self.__article.model
+        else:
+            record.articleid = self.__oldRecord.articleid
+            record.model     = self.__oldRecord.model
+        record.count     = float(self.ui.lineEdit_count.text())
+        record.detail    = u'%s'%self.ui.textEdit_detail.toPlainText()
+        record.price     = float(self.ui.lineEdit_price.text())
+        record.time      = self.ui.dateEdit.text()
+        record.number    = u'%s'%self.ui.lineEdit_number.text()
         if self.__client != None:
             record.clientid = self.__client.id
-
         if not dbInOutRecord().modify(record):
             QMessageBox.critical(self, u'error', u'更新出入库记录失败,请重试')
         else:
