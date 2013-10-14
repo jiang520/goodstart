@@ -21,6 +21,47 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <item>
+         <widget class="QRadioButton" name="radioButton_in">
+          <property name="text">
+           <string>进货</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="radioButton_out">
+          <property name="text">
+           <string>出货</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_5">
+          <property name="text">
+           <string>货单号:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="lineEdit_number"/>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_3">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+      <item>
        <layout class="QHBoxLayout" name="horizontalLayout_8">
         <item>
          <widget class="QLabel" name="label_6">
@@ -40,16 +81,6 @@
          </widget>
         </item>
         <item>
-         <widget class="QLabel" name="label_8">
-          <property name="text">
-           <string>物品系统ID:</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLineEdit" name="lineEdit_articleid"/>
-        </item>
-        <item>
          <widget class="QPushButton" name="pushButton_new">
           <property name="text">
            <string>选择物品</string>
@@ -59,36 +90,8 @@
           </property>
          </widget>
         </item>
-       </layout>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_3">
         <item>
-         <widget class="QRadioButton" name="radioButton_in">
-          <property name="text">
-           <string>进货</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QRadioButton" name="radioButton_out">
-          <property name="text">
-           <string>出货</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="label_4">
-          <property name="text">
-           <string>  日期</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QDateEdit" name="dateEdit"/>
-        </item>
-        <item>
-         <spacer name="horizontalSpacer_3">
+         <spacer name="horizontalSpacer_2">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
@@ -107,7 +110,7 @@
         <item>
          <widget class="QLabel" name="label">
           <property name="text">
-           <string>数量:</string>
+           <string>数    量:</string>
           </property>
          </widget>
         </item>
@@ -164,7 +167,7 @@
         <item>
          <widget class="QLabel" name="label_9">
           <property name="text">
-           <string>客户:</string>
+           <string>客    户:</string>
           </property>
          </widget>
         </item>
@@ -186,14 +189,27 @@
          </widget>
         </item>
         <item>
-         <widget class="QLabel" name="label_5">
+         <spacer name="horizontalSpacer_4">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_4">
           <property name="text">
-           <string>货单号:</string>
+           <string>日    期:</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QLineEdit" name="lineEdit_number"/>
+         <widget class="QDateEdit" name="dateEdit"/>
         </item>
        </layout>
       </item>

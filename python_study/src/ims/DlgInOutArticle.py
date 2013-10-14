@@ -27,6 +27,7 @@ class DlgInOutArticle(QDialog):
         """初始构造函数"""
         self.__recordList = []
         self.__client = None
+        self.__article = None
         super(DlgInOutArticle,self).__init__(parent)
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
@@ -47,16 +48,16 @@ class DlgInOutArticle(QDialog):
         self.ui.radioButton_in.setEnabled(False)
         self.ui.radioButton_out.setEnabled(False)
         self.ui.lineEdit_count.setText(u'1')
-        self.ui.lineEdit_price.setText(u'1.0')
+        self.ui.comboBox_price.setEditText(u'1.0')
+        self.ui.label_unit.setText(u'')
         self.ui.label_tips.setText(u'')
+
         self.ui.lineEdit_articlename.setEnabled(False)
-        self.ui.lineEdit_articleid.setEnabled(False)
         self.ui.lineEdit_count.setMaxLength(10)
-        self.ui.lineEdit_price.setMaxLength(10)
         self.ui.textEdit_detail.setAcceptRichText(False)
         #自动计算总金额
         self.ui.lineEdit_count.textChanged.connect(self.slotUpdateTotal)
-        self.ui.lineEdit_price.textChanged.connect(self.slotUpdateTotal)
+        self.ui.comboBox_price.editTextChanged.connect(self.slotUpdateTotal)
         self.ui.dateEdit.setDate(QDate.currentDate())        
         #连接事件与控件
         self.ui.pushButton_addtolist.clicked.connect(self.slotAddToList)
@@ -64,7 +65,7 @@ class DlgInOutArticle(QDialog):
         self.ui.pushButton_gen.clicked.connect(self.slotGenNumber)
         self.ui.pushButton_reset.clicked.connect(self.slotReset)
         self.ui.pushButton_clear.clicked.connect(self.slotClearlist)
-        self.ui.pushButton_Cancel.clicked.connect(self.slotCancel)
+        self.ui.pushButton_Cancel.clicked.connect(self.close)
         self.ui.pushButton_selectArticle.clicked.connect(self.slotArticleMs)
         self.ui.pushButton_selectclient.clicked.connect(self.slotSelectClient)
 
@@ -120,7 +121,6 @@ class DlgInOutArticle(QDialog):
             self.ui.lineEdit.setText('')
     '''重置输入'''
     def slotReset(self):
-        self.ui.lineEdit_articleid.setText('')
         self.ui.lineEdit_articlename.setText('')
         self.ui.lineEdit_count.setText('1.0')
         self.ui.lineEdit_price.setText('1.0')
@@ -133,17 +133,23 @@ class DlgInOutArticle(QDialog):
         if QDialog.Accepted != dlg.exec_():
             #print 'not accepted'
             return
-        article = dlg.getSelectedArticle()
-        if article == None: return
+        self.__article = dlg.getSelectedArticle()
+        if self.__article == None: return
         #如果返回了正确的物品信息
-        self.ui.lineEdit_articleid.setText(str( article.id))
-        self.ui.lineEdit_articlename.setText(article.model)
-        remainList = dbArticle().getSpecArticleRemainList(article.id)
+        self.ui.lineEdit_articlename.setText(self.__article.model)
+        self.ui.label_unit.setText(self.__article.unit)
+        remainList = dbArticle().getSpecArticleRemainList(self.__article.id)
         if len(remainList) > 0:
             remainInfo = remainList[0]
             self.ui.lineEdit_remain.setText('%f'%remainInfo.remainCount)
         else:
             self.ui.lineEdit_remain.setText(u'0')
+        #更新价格列表
+        priceList = dbInOutRecord().getSpecArticlePriceList(self.__article.id)
+        self.ui.comboBox_price.clear()
+        for price in priceList: self.ui.comboBox_price.addItem(u'%.2f'%price)
+        self.ui.comboBox_price.setCurrentIndex(0)
+        self.ui.comboBox_price.setEditable(True)
 
        
     '''弹出窗口让用户选择客户对象'''
@@ -152,12 +158,11 @@ class DlgInOutArticle(QDialog):
         dlg.setModal(True)
         if QDialog.Accepted != dlg.exec_():
             return
-        client = dlg.getChooseClient()
-        if client == None:
+        self.__client = dlg.getChooseClient()
+        if self.__client == None:
             print 'Choose none client'
             return
         else:
-            self.__client = client;
             self.ui.lineEdit_client.setText('[%d]%s'%(self.__client.id,self.__client.name))
     '''
     右键弹出菜单,可以删除
@@ -186,14 +191,12 @@ class DlgInOutArticle(QDialog):
     添加到进出货记录项到货单列表
     '''
     def slotAddToList(self):
-        #try:
-        record = InOutRecord()
-        strid = self.ui.lineEdit_articleid.text()
-        if strid == '' :
+        if self.__article is None:
             self.ui.label_tips.setText(u'''<span style='color:#ff0000'>未选择具体物品型号</span>''')
-            return        
-        record.articleid = int(strid)
-        record.model = u'%s'%self.ui.lineEdit_articlename.text()
+            return
+        record = InOutRecord()
+        record.articleid = self.__article.id
+        record.model = self.__article.model
         record.count = float(self.ui.lineEdit_count.text())
         '''如果是出货'''
         if self.ui.radioButton_out.isChecked():
@@ -204,7 +207,7 @@ class DlgInOutArticle(QDialog):
                 self.ui.label_tips.setText(u'''<span style='color:#ff0000'>出货数量超出库存</span>''')
                 return
         record.detail = u'%s'%self.ui.textEdit_detail.toPlainText()
-        record.price  = float(self.ui.lineEdit_price.text())
+        record.price  = float(self.ui.comboBox_price.currentText())
         record.time = self.ui.dateEdit.text()
         if self.__client != None:
             record.clientid = self.__client.id
@@ -291,14 +294,7 @@ class DlgInOutArticle(QDialog):
         remainInfo = dbArticle().getSpecArticleRemainList(articleid)
         if remainInfo != None and len(remainInfo) > 0:
             self.ui.lineEdit_remain.setText('%f'%remainInfo[0].remainCount)       
-        
-        
-    '''退出窗口'''
-    def slotCancel(self):
-        self.close()
-            
-    
-            
+
 if __name__ == '__main__':
     appp = QApplication(sys.argv)
     window = DlgInOutArticle(None)

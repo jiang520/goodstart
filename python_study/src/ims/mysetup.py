@@ -1,4 +1,4 @@
-#encoding=gb2312
+# -*- coding: gb2312 -*-
 __author__ = 'Administrator'
 
 # mysetup.py
@@ -25,7 +25,7 @@ setup(windows=["__init__.py"],
 
 import shutil
 import os
-curdir = os.getcwd()
+curdir = os.getcwdu()
 print curdir
 #复制文件
 if curdir != '':
@@ -43,4 +43,16 @@ if curdir != '':
         print '=========copy %s to dist/%s'%(filename,filename)
         shutil.copyfile(filename,  'dist/%s'%filename)
     shutil.move(curdir+u'\\dist\\__init__.exe', curdir+u'\\dist\\UT库存管理系统.exe')
-    shutil.move(curdir+u'\\dist', curdir+u'\\UT库存管理系统')
+    strSrc = u'%s\\dist'%curdir
+    print 'srdir=',strSrc
+    strDst = curdir+u'\\库存管理系统'
+    print 'dstdir,',strDst
+    #os.rmdir(unicode(strDst))
+    #os.rename(strSrc, strDst)
+    #reload(sys)
+    #sys.setdefaultencoding('gb2312')
+    #os.system(u'rmdir /q /s '+strDst)
+    #os.system(u'mkdir '+strDst)
+    #cmd = u'xcopy /q /s %s %s'%(strSrc, strDst)
+    #print 'cmd ',cmd
+    #os.system(cmd)

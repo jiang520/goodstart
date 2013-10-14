@@ -5,7 +5,7 @@ Created on 2013-6-6
 '''
 import os
 import sys
-if __name__ == '__main__':
+def pyqt_ui_2_py():
     exepath = "C:\Python27\Lib\site-packages\PyQt4\pyuic4"
     print os.getcwd()
     os.chdir(os.getcwd())
@@ -13,10 +13,11 @@ if __name__ == '__main__':
         #print type(file)
         #print 'ext =', file[-3:]
         if  len(file) > 3 and (file[-3: ] == '.ui'):
-            filename = file.rstrip('.ui')            
+            filename = file.rstrip('.ui')
             cmd = "%s %s > ui%s.py"%(exepath, file, filename)
             print cmd
             os.system(cmd)
-            
-        
+
+if __name__ == '__main__':
+    pyqt_ui_2_py()
     pass

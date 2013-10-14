@@ -1,9 +1,13 @@
+#encoding=gb2312
 '''
 Created on 2013-9-29
 
 @author: Administrator
 '''
 from dbActicleIMS import dbActicleIMS
+from ims import dbClient
+from ims.model.dbArticle import dbArticle
+
 
 class InOutRecord:
     def __init__(self):
@@ -17,25 +21,46 @@ class InOutRecord:
         self.number = 0
         self.clientid = 0
         self.articleid = 0
-        self.model = u''
-        self.unit = u''
+        self.__articleInfo = None
+        self.__clientInfo  = None
+    #延迟查询
+    def getArticleInfo(self):
+        if self.__articleInfo is None:
+            self.__articleInfo = dbArticle().getById(self.articleid)
+        return  self.__articleInfo
+    #延迟查询
+    def getClientInfo(self):
+        if self.__clientInfo is None:
+            self.__clientInfo = dbClient().getById(self.clientid)
+        return  self.__clientInfo
+
     def __str__(self):
         return '<InOurRecord object(id=%d)>'%self.id
         
 class dbInOutRecord:
-    def getRecord(self, start=0,end=50, number=None, strDateStart=None, strDateEnd=None, articleid=None):        
-        strFilter2 = '' 
-        strFilter1 = ''
-        strFilterArticle = ''
-        if None != number:strFilter1 = ''' and recordid like '%%%s%%' '''%number
-        if None!= strDateStart and None != strDateEnd:
-            strFilter2 = ''' and time >= '%s' and time <= '%s' '''%(strDateStart, strDateEnd)
-        if articleid!=None:
-            strFilterArticle = ''' and articleid=%d '''%articleid        
-        sql = '''SELECT tbInOutRecord.id, "articleid", "model","time", "count", "unit", "price", "recordid", "clientid", tbInOutRecord.detail
-                    FROM tbInOutRecord left join tbArticle on tbInOutRecord.articleid=tbArticle.id
-                    where 1=1 %s %s %s
-                    limit %d,%d'''%(strFilter1, strFilter2, strFilterArticle, start,end)
+    def getRecord(self, strNumber=None,
+                  strArticleModel=None,
+                  strClientName=None,
+                  dateInterval=None,
+                  articleid = None,
+                  indexInterval=(0,100)):
+        if indexInterval == None: return
+        strFilterList = []
+        if None != strNumber:
+            strFilterList.append(''' and recordid like '%%%s%%' '''%strNumber)
+        if None != dateInterval and dateInterval[0] != '' and dateInterval[1] != '':
+            strFilterList.append(''' and time >= '%s' and time <= '%s' '''%(dateInterval[0], dateInterval[1]))
+        if None != strArticleModel:
+            strFilterList.append( ''' and model like '%%%s%%' '''%strArticleModel )
+        if None != strClientName:
+            strFilterList.append( '''and tbClient.name like '%%%s%%' '''%strClientName)
+        if None != articleid:
+            strFilterList.append('''and articleid=%d'''%articleid)
+        sql = '''SELECT tbInOutRecord.id, "articleid", "time", "count", "price", "recordid", tbInOutRecord.detail, "clientid"
+                    FROM tbInOutRecord left join tbArticle on tbInOutRecord.articleid=tbArticle.id,
+                                                 tbClient on tbClient.id = tbInOutRecord.clientid
+                    where 1=1 %s
+                    limit %d,%d'''%(' '.join(strFilterList), indexInterval[0], indexInterval[1])
         print sql
         con = dbActicleIMS.getInstance().getConnection()
         cursor = con.execute(sql)
@@ -44,17 +69,25 @@ class dbInOutRecord:
             record          = InOutRecord()
             record.id       = int(item[0])
             record.articleid= int(item[1])
-            record.model    = item[2]
-            record.time     = item[3]
-            record.count    = float(item[4])
-            record.unit     = item[5]
-            record.price    = float(item[6])
-            record.number   = item[7]
-            record.clientid = int(item[8])
-            record.detail   = item[9]
+            record.time     = item[2]
+            record.count    = float(item[3])
+            record.price    = float(item[4])
+            record.number   = item[5]
+            record.detail   = item[6]
+            record.clientid = item[7]
             listRes.append(record)
         return listRes
-    
+
+    #获取物品的所有
+    def getSpecArticlePriceList(self,article_id):
+        sql = '''SELECT distinct price FROM tbInOutRecord where articleid=%d order by time desc '''%article_id
+        con = dbActicleIMS.getInstance().getConnection()
+        cursor = con.execute(sql)
+        priceList = []
+        for item in  cursor.fetchall():
+            priceList.append(item[0])
+        return  priceList
+
     def getById(self, recordid):
         sql = '''SELECT id, articleid, time, count, price, recordid, clientid, detail  FROM tbInOutRecord where id=%d '''%recordid
         print sql
