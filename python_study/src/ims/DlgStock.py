@@ -36,6 +36,10 @@ class DlgStock(QDialog):
         self.__article_id = None
         self.__updateArticleCountList()
 
+    def setFilterArticleId(self,article_id):
+        self.__article_id = article_id
+        self.slotApply()
+
     def slotContextMenu(self):
         action_export = QAction(u'导出',self)
         action_export.triggered.connect(self.slotExport)
@@ -60,11 +64,12 @@ class DlgStock(QDialog):
 
     #更新物品库存列表
     def __updateArticleCountList(self):
-        if self.__article_id is None :
-            remainlist = dbArticle().getAllArticleRemainList()
+        #是否匹配物品模式
+        if self.ui.checkBox.isChecked():
+            modelname = u'%s'%self.ui.lineEdit_model.text()
         else:
-            remainlist = dbArticle().getSpecArticleRemainList(self.__article_id)
-        #print remainlist
+            modelname = None
+        remainlist = dbArticle().getArticleRemainList(self.__article_id, modelname)
         model = QStandardItemModel(len(remainlist),5, self)
         labels = [u'id',u'大类名',u'小类名', u'物品型号', u'库存', u'最新入库单价', u'封装', u'品牌', u'详细说明']
         model.setHorizontalHeaderLabels(QStringList(labels))

@@ -178,12 +178,23 @@ class dbArticle:
         except:
             return False
         
-    '''查找所有库存'''
-    def getAllArticleRemainList(self):
+    #'''条线组合 查找库存'''
+    def getArticleRemainList(self, articleid=None,model=None):
+        filterlist = []
+        #物品id匹配
+        if articleid != None:
+            filterlist.append(''' and tbArticle.id=%d'''%articleid)
+        #模糊型号匹配
+        if model != None and len(model) > 0:
+            filterlist.append(''' and tbArticle.model like '%%%s%%' '''%model)
+        #构造查找函数
         sql = '''select tbArticle.id, sum(tbInoutRecord.count)
                 from tbArticle left join tbInoutRecord                
-                on tbInoutRecord.articleid=tbArticle.id                 
-                group by tbArticle.id''' 
+                on tbInoutRecord.articleid=tbArticle.id
+                where 1=1 %s
+                group by tbArticle.id'''%(' '.join(filterlist))
+        #查询结果
+        print sql
         cursor = dbActicleIMS.getInstance().getConnection().execute(sql)
         reslist = []
         for item in  cursor.fetchall():    
@@ -193,11 +204,12 @@ class dbArticle:
             reslist.append(remainInfo)
         return reslist
     
-    '''查找指定物品的库存'''        
+    #'''查找指定物品的库存'''
     def getSpecArticleRemainList(self, articleid):
+        if articleid == None: return  []
         sql = '''select tbArticle.id,sum(tbInoutRecord.count)
                  from tbInoutRecord,tbArticle
-                  where tbInoutRecord.articleid=tbArticle.id and tbArticle.id=%d 
+                  where tbInoutRecord.articleid=tbArticle.id and tbArticle.id=%d
                   group by tbInoutRecord.articleid'''%articleid
         print sql
         cursor = dbActicleIMS.getInstance().getConnection().execute(sql)

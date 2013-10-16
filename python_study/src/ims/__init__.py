@@ -59,7 +59,17 @@ class DlgIMSMain(QMainWindow):
         self.treeArticle.itemSelectionChanged.connect(self.slotSelecteArticle)
 
     def slotSelecteArticle(self):
-        pass
+        item = self.treeArticle.currentItem()
+        text = item.text(1)
+        #print '=======id = ',text
+        if text == '': return
+        res = text.toInt()
+        if not res[1]: return
+        articleid = None
+        if res[0] > 0: articleid = res[0]
+        self.dlgStock.setArticleIdFilter(articleid)
+        self.dlgRecordSearch.setArticleIdFilter(articleid)
+
     '''更新物品分类树'''
     def __initTreeCtrl_Article(self):               
         strListHeader = QStringList()
@@ -101,7 +111,7 @@ class DlgIMSMain(QMainWindow):
                     
             self.treeArticle.addTopLevelItem(item)
            
-    '''初始化菜单'''          
+    #'''初始化菜单'''
     def __initMenu(self):
         self.action_in      = QAction(QIcon("images/shopping.png"),u"进货", self)
         self.action_out     = QAction(QIcon("images/sale.png"), u"出货", self)
