@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'DlgArticle.ui'
 #
-# Created: Sun Oct 13 20:54:29 2013
-#      by: PyQt4 UI code generator 4.10.3
+# Created: Wed Oct 16 13:43:05 2013
+#      by: PyQt4 UI code generator 4.10.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -59,9 +59,9 @@ class Ui_Dialog(object):
         self.pushButton_2 = QtGui.QPushButton(Dialog)
         self.pushButton_2.setObjectName(_fromUtf8("pushButton_2"))
         self.horizontalLayout.addWidget(self.pushButton_2)
-        self.pushButton_cancel = QtGui.QPushButton(Dialog)
-        self.pushButton_cancel.setObjectName(_fromUtf8("pushButton_cancel"))
-        self.horizontalLayout.addWidget(self.pushButton_cancel)
+        self.pushButton_export = QtGui.QPushButton(Dialog)
+        self.pushButton_export.setObjectName(_fromUtf8("pushButton_export"))
+        self.horizontalLayout.addWidget(self.pushButton_export)
         self.verticalLayout.addLayout(self.horizontalLayout)
         self.tableView = QtGui.QTableView(Dialog)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
@@ -82,5 +82,5 @@ class Ui_Dialog(object):
         self.pushButton_add.setText(_translate("Dialog", "新增物品", None))
         self.pushButton_ok.setText(_translate("Dialog", "修改", None))
         self.pushButton_2.setText(_translate("Dialog", "删除", None))
-        self.pushButton_cancel.setText(_translate("Dialog", "退出", None))
+        self.pushButton_export.setText(_translate("Dialog", "退出", None))
 

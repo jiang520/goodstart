@@ -13,7 +13,7 @@ class SysUser:
 
     #可以修改内容
     def is_enable_write_all(self):
-        #print self.usertype, self.usertype == u'管理员'
+        #print 'is admin',self.usertype == u'管理员'
         return self.usertype == u'管理员'
 
     def is_enable_read_all(self):

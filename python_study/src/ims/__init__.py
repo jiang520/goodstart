@@ -11,6 +11,7 @@ from ims.DlgClient import *
 from ims.DlgArticle import DlgArticle
 from ims.DlgRecordSearch import DlgRecordSearch
 from ims.DlgInOutArticle import *
+from ims.DlgStock import DlgStock
 from ims.model import dbSysUser
 from ims.model.dbInoutRecord import *
 from ims.model.dbArticleType import *
@@ -33,8 +34,8 @@ class DlgIMSMain(QMainWindow):
             sys.exit(0)
         self.setWindowTitle(u'ut库存管理系统--欢迎使用-%s'%ims.model.dbSysUser.g_current_user.username)
         self.tabWidget = QTabWidget(self)
-        self.tableViewRemain = QTableView(self)
-        self.tabWidget.addTab(self.tableViewRemain, u'库存列表')
+        self.dlgStock = DlgStock(self)
+        self.tabWidget.addTab(self.dlgStock, u'库存列表')
         '''进出货记录'''
         self.dlgRecordSearch = DlgRecordSearch(self)
         self.tabWidget.addTab(self.dlgRecordSearch, u'进出货记录')
@@ -44,43 +45,29 @@ class DlgIMSMain(QMainWindow):
         spliterH = QSplitter(Qt.Horizontal, self)       
         self.treeArticle = QTreeWidget(self)       
         spliterH.addWidget(self.treeArticle)
-
         spliterH.addWidget(self.tabWidget)
-        spliterH.setLineWidth(0)
-        spliterH.setLineWidth(1)
-        spliterH.setStretchFactor(0, 30)
+        spliterH.setStretchFactor(0, 40)
         spliterH.setStretchFactor(1, 100)
         self.setCentralWidget(spliterH)
 
         self.setMinimumSize(800, 600)
+        self.resize(800, 600)
         self.__initMenu()
         self.__initToolbar()
         self.__initTreeCtrl_Article()
-        self.__updateArticleCountList()
         self.__udpateArticleTreeView()     
-        self.treeArticle.itemSelectionChanged.connect(self.__updateArticleCountList)
+        self.treeArticle.itemSelectionChanged.connect(self.slotSelecteArticle)
 
-
+    def slotSelecteArticle(self):
+        pass
     '''更新物品分类树'''
     def __initTreeCtrl_Article(self):               
         strListHeader = QStringList()
         strListHeader.append(u'物料分类')
-        #strListHeader.append(u'封装')
-        #strListHeader.append(u'备注')
         self.treeArticle.setHeaderLabels(strListHeader)
         self.treeArticle.setStyleSheet( "QTreeView::item:hover{background-color:rgb(0,255,0,50)} "
                                           "QTreeView:item{border-bottom:1px solid #999999;border-right:1px solid #999999}"
                                           "QTreeView::item:selected{background-color:rgb(255,0,0,100)}");
-
-        
-        self.tableViewRemain.setEditTriggers(QTableWidget.NoEditTriggers)
-        self.tableViewRemain.setSelectionBehavior(QTableWidget.SelectRows)
-        self.tableViewRemain.setSelectionMode(QTableWidget.SingleSelection)
-        self.tableViewRemain.setAlternatingRowColors(True)
-
-       
-        
-        
     def __udpateArticleTreeView(self):
         self.treeArticle.clear()
         '''添加一个显示所有库存的项'''
@@ -154,17 +141,22 @@ class DlgIMSMain(QMainWindow):
         menuTools.addAction(self.action_export_remain)
         menuTools.addAction(self.action_export_articl)
         menuTools.addAction(self.action_export_record)
-        menuTools.addSeparator()
-        menuTools.addAction(self.action_backup)
 
         menuUser = QMenu(u'帐户设置',self)
         menuUser.addAction(self.action_change_pass)
         menuUser.addSeparator()
         menuUser.addAction(self.action_admin)
 
+        menuSystem = QMenu(u'系统设置',self)
+        menuSystem.addAction(self.action_backup)
+        action_auto_backup = QAction(u'自动备份数据库', self)
+        menuSystem.addAction(action_auto_backup)
+        menuSystem.addAction(QAction(u'保存登陆密码',self))
+
         menubar.addMenu(menufile)
         menubar.addMenu(menuTools)
         menubar.addMenu(menuUser)
+        menubar.addMenu(menuSystem)
         menubar.addAction(self.action_about)
         if not ims.model.dbSysUser.g_current_user.is_enable_write_all():
             self.action_in.setEnabled(False)
@@ -188,7 +180,6 @@ class DlgIMSMain(QMainWindow):
         self.addToolBar(toolbar)
 
 
-
     #导出库存列表
     def slotExportRemain(self):
         filePath = QFileDialog.getSaveFileName(self)
@@ -200,11 +191,12 @@ class DlgIMSMain(QMainWindow):
 
     #导出出入库记录
     def slotExportRecord(self):
-        filePath = QFileDialog.getSaveFileName(self)
-        if not filePath: return
-        filePath.append('.txt')
+        filePath = u'%s'%QFileDialog.getSaveFileName(self)
+        if filePath=='': return
+        filePath = filePath.rstrip(u'.xls')
+        filePath = filePath + (u'.xls')
         import ims.FunctionTools
-        ims.FunctionTools.ExportTableWidgetData(self.dlgRecordSearch.ui.tableView, filePath)
+        ims.FunctionTools.ExportTableWidgetDataToExcel(self.dlgRecordSearch.ui.tableView, filePath)
         QMessageBox.information(self, u'info', u'已导出到%s'%filePath)
 
     def slotAbout(self):
@@ -220,17 +212,7 @@ class DlgIMSMain(QMainWindow):
         dlg.setModal(True)
         dlg.exec_()
 
-    def __getArticleCountListLabels(self):
-        labels = QStringList()
-        labels.append(u'id')
-        labels.append(u'物品型号')
-        labels.append(u'库存')
-        labels.append(u'封装')
-        labels.append(u'品牌')
-        labels.append(u'详细说明')
-        return labels
-
-    '''备份数据库,将数据库文件复制到其他位置'''
+    #'''备份数据库,将数据库文件复制到其他位置'''
     def slotBackup(self):
         dstPath = QFileDialog.getExistingDirectory(self)
         if dstPath == "" : return
@@ -247,39 +229,7 @@ class DlgIMSMain(QMainWindow):
             QMessageBox.critical(self, 'Successed!', u'数据库备份失败%s'%e)
 
 
-    '''
-    更新物品库存列表
-    '''
-    def __updateArticleCountList(self):
-        item = self.treeArticle.currentItem()
-        '''查找所有物品的库存'''
-        if item==None or item.text(1)=="-1" :
-            remainlist = dbArticle().getAllArticleRemainList()
-            self.dlgRecordSearch.setArticleIdFilter(None)
-        elif item.text(1)=='':
-            return
-        else:
-            article_id = int( item.text(1))
-            remainlist = dbArticle().getSpecArticleRemainList(article_id)
-            self.dlgRecordSearch.setArticleIdFilter(article_id)
-        #print remainlist
-        model = QStandardItemModel(len(remainlist),5, self)
-        model.setHorizontalHeaderLabels(self.__getArticleCountListLabels())
-        row = 0
-        for item in remainlist:
-            model.setItem(row, 0, QStandardItem(QString(str(item.article.id) )) )            
-            model.setItem(row, 1, QStandardItem(QString(item.article.model )) )         
-            model.setItem(row, 2, QStandardItem(QString('%f'%item.remainCount) ) )
-            model.setItem(row, 3, QStandardItem(QString(item.article.packaging )) )
-            model.setItem(row, 4, QStandardItem(QString(item.article.pingpai )) )
-            model.setItem(row, 5, QStandardItem(QString(item.article.detail )) )
-            row = row+1    
-        self.tableViewRemain.setModel(model)
-        self.tableViewRemain.verticalHeader().setHidden(True)
-        self.tableViewRemain.setColumnWidth(0, 40)
-        self.tableViewRemain.setColumnWidth(5, 230)
-        for i in range(model.rowCount()):
-            self.tableViewRemain.setRowHeight(i, 20)
+
 
     def slotChangePass(self):
         pass

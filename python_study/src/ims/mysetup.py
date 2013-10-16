@@ -43,16 +43,17 @@ if curdir != '':
         print '=========copy %s to dist/%s'%(filename,filename)
         shutil.copyfile(filename,  'dist/%s'%filename)
     shutil.move(curdir+u'\\dist\\__init__.exe', curdir+u'\\dist\\UT库存管理系统.exe')
+    sys.exit(0)
+    if not os.path.isdir(curdir+u'\\dist\\images'):
+        os.mkdir(curdir+u'\\dist\\images')
+    shutil.copytree(curdir+u'\\images', curdir+u'\\dist\\images')
     strSrc = u'%s\\dist'%curdir
-    print 'srdir=',strSrc
     strDst = curdir+u'\\库存管理系统'
-    print 'dstdir,',strDst
-    #os.rmdir(unicode(strDst))
-    #os.rename(strSrc, strDst)
-    #reload(sys)
-    #sys.setdefaultencoding('gb2312')
-    #os.system(u'rmdir /q /s '+strDst)
-    #os.system(u'mkdir '+strDst)
-    #cmd = u'xcopy /q /s %s %s'%(strSrc, strDst)
-    #print 'cmd ',cmd
-    #os.system(cmd)
+    print 'mvdir from [%s]->[%s]'%(strSrc, strDst)
+    os.rmdir(unicode(strDst))
+    os.rename(strSrc, strDst)
+    os.system(u'rmdir /q /s '+strDst)
+    os.system(u'mkdir '+strDst)
+    cmd = u'xcopy /q /s %s %s'%(strSrc, strDst)
+    print 'cmd ',cmd
+    os.system(cmd)

@@ -49,6 +49,7 @@ class DlgInOutArticle(QDialog):
         self.ui.radioButton_out.setEnabled(False)
         self.ui.lineEdit_count.setText(u'1')
         self.ui.comboBox_price.setEditText(u'1.0')
+        self.ui.comboBox_price.setEditable(True)
         self.ui.label_unit.setText(u'')
         self.ui.label_tips.setText(u'')
 
@@ -149,7 +150,6 @@ class DlgInOutArticle(QDialog):
         self.ui.comboBox_price.clear()
         for price in priceList: self.ui.comboBox_price.addItem(u'%.2f'%price)
         self.ui.comboBox_price.setCurrentIndex(0)
-        self.ui.comboBox_price.setEditable(True)
 
        
     '''弹出窗口让用户选择客户对象'''

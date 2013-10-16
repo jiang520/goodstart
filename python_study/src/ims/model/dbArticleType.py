@@ -18,7 +18,17 @@ class dbArticleType:
     """
     物品类型管理信息
     """
-
+    def getArticleTypeInfo(self, type_id):
+        sql = '''select tbType.name, tbType2.name
+                    from tbType left join tbType as tbType2 on tbType.parentid=tbType2.id
+                    where tbType.id=%d'''%type_id
+        print sql
+        con = dbActicleIMS.getInstance().getConnection()
+        cursor = con.execute(sql)
+        if cursor is None: return  None
+        res = cursor.fetchone()
+        if res is None: return  None
+        return  res
 
     '''查找大类信息列表'''
     def getType1(self):

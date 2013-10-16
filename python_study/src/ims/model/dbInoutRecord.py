@@ -88,6 +88,16 @@ class dbInOutRecord:
             priceList.append(item[0])
         return  priceList
 
+    #获取物品最近单价
+    def getLastUnitPrice(self, article_id):
+        sql = '''SELECT price From tbInoutRecord where articleid=%d order by time desc limit 1,1'''%article_id
+        con = dbActicleIMS.getInstance().getConnection()
+        cursor = con.execute(sql)
+        if cursor is None: return  None
+        item = cursor.fetchone()
+        if item is None: return  None
+        return  item[0]
+
     def getById(self, recordid):
         sql = '''SELECT id, articleid, time, count, price, recordid, clientid, detail  FROM tbInOutRecord where id=%d '''%recordid
         print sql

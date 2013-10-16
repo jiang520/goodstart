@@ -11,7 +11,6 @@ import ims
 from ims.model.dbClient import *
 from ims.ui.uiDlgClient import *
 from ims.DlgClientAdd import DlgClientAdd
-from FunctionTools import ExportTableWidgetData
 class DlgClient(QDialog):
     '''
     classdocs
@@ -39,9 +38,12 @@ class DlgClient(QDialog):
             self.setWindowTitle(u'客户信息(双击可修改)')
             self.ui.tableView.doubleClicked.connect(self.slotModifyClient)                      
         self.updateTableWidget()
+        self.ui.tableView.setFocus()
 
         #权限限制
-        if not ims.model.dbSysUser.g_current_user or ims.model.dbSysUser.g_current_user.is_enable_write_all():
+        curUser = ims.model.dbSysUser.g_current_user
+        #print '-----------',curUser.is_enable_write_all()
+        if curUser == None or not curUser.is_enable_write_all():
             self.ui.pushButton_add.setEnabled(False)
             self.ui.pushButton_del.setEnabled(False)
             self.ui.pushButton_modify.setEnabled(False)
@@ -53,11 +55,8 @@ class DlgClient(QDialog):
         return QDialog.keyPressEvent(self, event) 
 
     def slotExportClient(self):
-        filePath = QFileDialog.getSaveFileName(self)
-        if not filePath: return
-        filePath.append('.txt')
-        ExportTableWidgetData(self.ui.tableView, filePath)
-        QMessageBox.information(self, u'info', u'已导出到%s'%filePath)
+        import FunctionTools
+        FunctionTools.ExportTableToExcel(self.ui.tableView)
 
     def slotAddClient(self):
         if not ims.model.dbSysUser.g_current_user.is_enable_write_all():return
@@ -65,7 +64,8 @@ class DlgClient(QDialog):
         dlg.setModal(True)
         dlg.exec_()
         self.updateTableWidget()
-        
+        self.tableView.setFocus()
+
     def slotModifyClient(self):
         if not ims.model.dbSysUser.g_current_user.is_enable_write_all(): return
         model = self.tableView.model()
@@ -80,6 +80,7 @@ class DlgClient(QDialog):
         dlg.setModal(True)
         dlg.exec_()
         self.updateTableWidget()
+        self.tableView.setFocus()
         
     def slotDeleteClient(self):
         if not ims.model.dbSysUser.g_current_user.is_enable_write_all(): return
@@ -97,6 +98,7 @@ class DlgClient(QDialog):
             QMessageBox.critical(self, u'error', u'删除客户信息失败')
         else:
             self.updateTableWidget()
+        self.tableView.setFocus()
             
     '''选中客户项后,直接退出'''
     def slotChooseClient(self):     

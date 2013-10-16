@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'DlgLogin.ui'
 #
-# Created: Sun Oct 13 20:54:30 2013
-#      by: PyQt4 UI code generator 4.10.3
+# Created: Wed Oct 16 13:43:06 2013
+#      by: PyQt4 UI code generator 4.10.1
 #
 # WARNING! All changes made in this file will be lost!
 

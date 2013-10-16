@@ -9,6 +9,7 @@ from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 import sys
 import ims
+from ims.FunctionTools import *
 from ims.ui.uiDlgRecordSearch import *
 from ims.ui import uiDlgRecordSearch
 from ims.model.dbInoutRecord import *
@@ -33,6 +34,7 @@ class DlgRecordSearch(QDialog):
         self.ui.dateEdit_end.setDate(QDate.currentDate())
         self.ui.pushButton_apply.clicked.connect(self.slotApplySearch)
         self.ui.pushButton_reset.clicked.connect(self.slotResetSearch)
+        self.ui.pushButton_export.clicked.connect(self.slotExport)
         
         self.ui.tableView.setEditTriggers(QTableWidget.NoEditTriggers)
         self.ui.tableView.setSelectionBehavior(QTableWidget.SelectRows)
@@ -123,8 +125,8 @@ class DlgRecordSearch(QDialog):
         #过滤进出库
         def func_filter_in(item): return item.count > 0
         def func_filter_out(item): return  item.count < 0
-        if self.ui.checkBox.isChecked():
-            if self.ui.radioButton.isChecked():
+        if self.ui.checkBox_inout.isChecked():
+            if self.ui.radioButton_in.isChecked():
                 recordlist = filter(func_filter_in,recordlist)
             else:
                 recordlist = filter(func_filter_out,recordlist)
@@ -135,6 +137,7 @@ class DlgRecordSearch(QDialog):
             model.setItem(i, 0, QStandardItem(QString(str(item.id))))
             articleInfo = item.getArticleInfo()
             clientInfo  = item.getClientInfo()
+            #获取物品型号,单位
             if articleInfo != None:
                 model.setItem(i, 1, QStandardItem(QString(unicode(articleInfo.model) )) )
                 model.setItem(i, 5, QStandardItem(QString(u'%s'%articleInfo.unit )))
@@ -145,6 +148,7 @@ class DlgRecordSearch(QDialog):
             model.setItem(i, 7, QStandardItem(QString(u'%f'%(item.count*item.price))))
             model.setItem(i, 8, QStandardItem(QString(item.number)))
             model.setItem(i, 9, QStandardItem(QString(item.detail)))
+            #获取客户信息
             if clientInfo!=None:
                 model.setItem(i, 10, QStandardItem(QString(clientInfo.name)))
             self.ui.tableView.setRowHeight(i,10)
@@ -172,7 +176,12 @@ class DlgRecordSearch(QDialog):
         self.ui.checkBox_date.setChecked(False)
         self.ui.checkBox_number.setChecked(False)
         self.slotApplySearch()
-        
+
+    #导出数据文件
+    def slotExport(self):
+        ExportTableToExcel(self.ui.tableView)
+
+
 if __name__ == '__main__':
     appp = QApplication(sys.argv)
     window = DlgRecordSearch()

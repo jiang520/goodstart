@@ -41,7 +41,7 @@ class DlgArticle(QDialog):
             self.ui.tableView.doubleClicked.connect(self.slotModifyArticle)
 
         self.ui.pushButton_add.clicked.connect(self.slotAddArticle)
-        self.ui.pushButton_cancel.clicked.connect(self.close)
+        self.ui.pushButton_export.clicked.connect(self.slotExport)
         self.ui.pushButton_2.clicked.connect(self.slotDelArticle)
         self.ui.treeWidget.currentItemChanged.connect(self.slotArticleItemChanged)
         self.ui.treeWidget.itemPressed[QTreeWidgetItem, int].connect(self.slotContextMenu)
@@ -264,7 +264,11 @@ class DlgArticle(QDialog):
         if not dbArticleType().rename(id, text[0]):
             QMessageBox.critical(self, u'error', u'重命名失败')
             return
-        item.setText(0, text[0])                    
+        item.setText(0, text[0])
+
+    def slotExport(self):
+        import  FunctionTools
+        FunctionTools.ExportTableToExcel(self.ui.tableView)
         
         
     '''物品列表中选择一项时'''   
