@@ -76,13 +76,7 @@ class DlgArticle(QDialog):
     def getSelectedArticle(self):
         return  self.__articleSelected
         
-    '''切换物品编辑状态'''
-    def setEditing(self, bEditing):
-        if not bEditing:
-            self.ui.groupBox.hide()
-        else:
-            self.ui.groupBox.show()
-            self.slotArticleItemChanged()
+
     '''右键弹出菜单'''
     def slotContextMenu(self, item, col):
         #if not ims.model.dbSysUser.g_current_user.is_enable_write_all():return
@@ -91,31 +85,29 @@ class DlgArticle(QDialog):
         if not res[1]:return
         depth = res[0]                
         rightMenu = QMenu(u"right")
-        action_add      = QAction(QString(u'新增'), self)
-        action_rename   = QAction(QString(u'改名'), self)
-        action_del      = QAction(QString(u'删除'), self)
-        action_edit     = QAction(QString(u'编辑'), self)
-        action_addchild = QAction(QString(u'新增子项'), self)
-        '''产生菜单,物品节点和类别节点对应菜单不一样'''
-        if depth != 3:
-            rightMenu.addAction(action_rename)
-            rightMenu.addAction(action_del)
-            rightMenu.addSeparator() 
-            rightMenu.addAction(action_add)
-            rightMenu.addSeparator()
-            rightMenu.addAction(action_addchild)
+        action_addType      = QAction(QString(u'新增'), self)
+        action_renameType   = QAction(QString(u'改名'), self)
+        action_delType      = QAction(QString(u'删除'), self)
+        action_addChild     = QAction(QString(u'新增子类'), self)
+        action_addArticle   = QAction(QString(u'新增物品'), self)
+        #'''产生菜单,物品节点和类别节点对应菜单不一样'''
+        rightMenu.addAction(action_renameType)
+        rightMenu.addAction(action_delType)
+        rightMenu.addSeparator()
+        rightMenu.addAction(action_addType)
+        #一级节点可以添加子类别
+        if depth ==1:
+            rightMenu.addAction(action_addChild)
         else:
-            rightMenu.addAction(action_edit)
-            rightMenu.addAction(action_del)
-            rightMenu.addSeparator()
-            rightMenu.addAction(action_add)
-        '''连接事件'''
-        action_addchild.triggered.connect(self.slotAddChild)
-        action_add.triggered.connect(self.slotAdd)
-        action_rename.triggered.connect(self.slotRename)
-        action_del.triggered.connect(self.slotDel)
-        action_edit.triggered[bool].connect(self.slotEdit)
-        '''显示菜单'''
+            rightMenu.addAction(action_addArticle)
+
+        #'''连接事件'''
+        action_addType.triggered.connect(self.slotAddType)
+        action_renameType.triggered.connect(self.slotRenameType)
+        action_delType.triggered.connect(self.slotDelType)
+        action_addChild.triggered.connect(self.slotAddChildType)
+        action_addArticle.triggered.connect(self.slotAddArticle)
+        #'''显示菜单'''
         rightMenu.exec_(QCursor.pos()) 
     
     '''获取指定节点的 数据'''
@@ -128,125 +120,108 @@ class DlgArticle(QDialog):
         depth = res[0]
         return (articleId, depth)
 
-    '''添加子项'''
-    def slotAddChild(self):
-        item = self.ui.treeWidget.currentItem()        
-        if not item: return
-        res = self.__getItemIdDepth__(item)
-        if not res :return
-        (id,depth) = res
-        if depth >= 3: return
-        text = QInputDialog.getText(self,
-                    QString(u"新增类别名" ),
-                    QString(u"请输入一个类别名称") ,
-                    QLineEdit.Normal);
-        if not text[1]: return
-        for i in range(item.childCount()):
-            if text[0]==item.child(i).text(0):
-                #print text[0],item.child(i).text(0)
-                QMessageBox.critical(self, u'error', u'已存在同名节点')
-                return
-        if depth == 1:
-            newtype = ArticleType()
-            newtype.parentid = id
-            newtype.text = text[0]
-            dbArticleType().insert(newtype)
-            self.__updateArticleTree()
-        else:
-            article = Article()
-            article.typeid = id
-            article.model = text[0]
-            if not dbArticle().add(article): return
-            articleAdded = dbArticle().getByTypeAndModel(id, text[0])
-            if not articleAdded: return
-            newItem = QTreeWidgetItem()
-            newItem.setText(0, articleAdded.model)
-            newItem.setData(0, Qt.UserRole, articleAdded.id)
-            newItem.setData(0, Qt.UserRole+1, 3)
-            item.addChild(newItem)
-    '''添加物品类型1/2'''
-    def __AddType(self, parentid):
-        text = QInputDialog.getText(self,
-                    QString(u"新增类别名" ),
-                    QString(u"请输入一个类别名称") ,
-                    QLineEdit.Normal)
-        if not text[1]: return        
-        newtype = ArticleType()
-        newtype.parentid = parentid
-        newtype.text = text[0]
-        if dbArticleType().insert(newtype):
-            self.__updateArticleTree()
-        else:
-            QMessageBox.critical(self, u'error', u'添加失败')
 
-    '''添加物品'''
-    def __AddArticle(self, parentid, parentitem):
-        text = QInputDialog.getText(self,
-                   QString(u"新增物品型号" ),
-                   QString(u"请输入物品型号") ,
-                   QLineEdit.Normal)
-        if not text[1]: return
-        if text[0]=='':return
-        article = Article()
-        article.typeid = parentid
-        article.model = text[0]
-        if not dbArticle().add(article):
-            QMessageBox.critical(self, u'error', u'添加物品失败')
-        else:
-            article = dbArticle().getByTypeAndModel(parentid, text[0])
-            item = QTreeWidgetItem()
-            item.setText(0, text[0])
-            item.setData(0, Qt.UserRole, article.id)
-            item.setData(0, Qt.UserRole+1, 3)
-            parentitem.addChild(item)
-
-    '''DELETE键删除物品节点,类别节点'''
+    #'''DELETE键删除物品节点,类别节点'''
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Delete:
-            self.slotDelArticle()
-            return
+            #tree控制有焦点时,删除类别,否则删除物品项
+            if self.focusWidget() == self.ui.tableView:
+                self.slotDelArticle()
+                return
+            elif self.focusWidget() == self.ui.treeWidget:
+                self.slotDelType()
+                return
         return QDialog.keyPressEvent(self, event) 
          
-    '''添加物品分类'''
+    #'''添加物品分类'''
     def slotAddType(self):
         #权限检查
         #if not ims.model.dbSysUser.g_current_user.is_enable_write_all():return
         item = self.ui.treeWidget.currentItem()
         if item == None:return
         itemData = self.__getItemIdDepth__(item)
-        if itemData == None : return       
-        if itemData[1] != 2:return
-        dlg = DlgArticleChange(self)
-        dlg.setModal(True)
-        dlg.exec_()
+        if itemData == None : return
+        if itemData[1] == 1:
+            #如果深度为1,则父类别id为0
+            parentid = 0
+        else:
+            #否则求父节点的类别id
+            item_parent = item.parent()
+            data_parent = self.__getItemIdDepth__(item_parent)
+            if itemData == None: return
+            parentid = data_parent[0]
+        #获取类别名称
+        text = QInputDialog.getText(self, u'新增类别',u'请输入一个新的类别名称')
+        if not text[1]: return
+        if text[0]=="": return
+        newtype = ArticleType()
+        newtype.text = u'%s'%text[0]
+        newtype.parentid = parentid
+        #执行数据库操作
+        if not dbArticleType().insert(newtype):
+            QMessageBox.critical(u'出错了',u'添加类别失败,请重试')
+        else:
+            self.__updateArticleTree()
+
+    #为一级节点添加子类型
+    def slotAddChildType(self):
+        #权限检查
+        #if not ims.model.dbSysUser.g_current_user.is_enable_write_all():return
+        item = self.ui.treeWidget.currentItem()
+        if item == None:return
+        itemData = self.__getItemIdDepth__(item)
+        parentid = itemData[0]
+        if parentid <=0: return
+        #获取类别名称
+        text = QInputDialog.getText(self, u'新增类别',u'请输入一个新的类别名称')
+        if not text[1]: return
+        if text[0]=="": return
+        newtype = ArticleType()
+        newtype.text = u'%s'%text[0]
+        newtype.parentid = parentid
+        #执行数据库操作
+        if not dbArticleType().insert(newtype):
+            QMessageBox.critical(u'出错了',u'添加类别失败,请重试')
+        else:
+            self.__updateArticleTree()
 
 
 
-    '''删除物品分类'''        
+    #'''删除物品分类'''
     def slotDelType(self):
         if not ims.model.dbSysUser.g_current_user.is_enable_write_all():return
-        item = self.ui.treeWidget.currentItem()        
-        if  item.child(0) :
-            QMessageBox.critical(self, u'error', u'需先删除所有子项!')
-            return
+        item = self.ui.treeWidget.currentItem()
+        if item is None: return
+        #需先删除所有子类别
+        itemdata  = self.__getItemIdDepth__(item)
+        if itemdata is None: return
+        type_id = itemdata[0]
+        depth = itemdata[1]
+        print depth
+        if depth != 2 and depth != 1: return
+        if depth == 2:
+            #检查2级类别下对应的是否有相关的物品信息
+            article_list = dbArticle().getArticlesByTypeId(type_id)
+            if article_list != None and len(article_list) > 0:
+                QMessageBox.critical(self, u'error', u'需先删除该类别下所有物品!')
+                return
+        else:
+            #1级类别检查下面是否有子类别
+            if item.childCount() > 0:
+                QMessageBox.critical(self, u'error', u'需先删除所有子类别')
+                return
+        #删除警告
         if QMessageBox.Yes != QMessageBox.warning(self, u'warning', u'确定删除此项吗', QMessageBox.Yes|QMessageBox.No, QMessageBox.No):
-            return                
-        res = self.__getItemIdDepth__(item)
-        if not res : return
-        id , depth = res
-        #print 'depth = ',depth
-        if depth ==1 :
-            if dbArticleType().delete(id):
-                self.__updateArticleTree()
-        elif depth == 2:
-            #print 'del type'
-            if dbArticleType().delete(id):
-                item.parent().removeChild(item)
+            return
+        #删除类别
+        if dbArticleType().delete(type_id):
+            self.__updateArticleTree()
+        else:
+            QMessageBox.critical(self, u'出错了', u'删除出错,请重试')
 
 
-
-    '''对物品类型节点改名'''
-    def slotRename(self):
+    #'''对物品类型节点改名'''
+    def slotRenameType(self):
         if not ims.model.dbSysUser.g_current_user.is_enable_write_all():return
 
         item = self.ui.treeWidget.currentItem()
@@ -265,13 +240,13 @@ class DlgArticle(QDialog):
             QMessageBox.critical(self, u'error', u'重命名失败')
             return
         item.setText(0, text[0])
-
+    #导出物品列表
     def slotExport(self):
         import  FunctionTools
         FunctionTools.ExportTableToExcel(self.ui.tableView)
         
         
-    '''物品列表中选择一项时'''   
+    #'''物品列表中选择一项时'''
     def slotArticleItemChanged(self):
         item = self.ui.treeWidget.currentItem()
         if not item : return
@@ -280,23 +255,24 @@ class DlgArticle(QDialog):
         if not res:
             print 'item data is error'
             return
-        '''如果未选中物品节点,则不做任何操作'''
+        #'''如果未选中物品节点,则不做任何操作'''
         if res[1] != 2:
             #print 'item data-depth !=3'
             return
         self.__updateArticleList()
-        
-    '''类别1更新了,就更新类别2列表'''   
-    def slotType1changed(self):
-        #print 'type 1 changed '
-        self.__initType2list()
 
+    #添加物品信息
     def slotAddArticle(self):
         #if not ims.model.dbSysUser.g_current_user.is_enable_write_all():return
+        item = self.ui.treeWidget.currentItem()
         dlg = DlgArticleChange(self)
+        if item != None and item.parent() != None:
+            strType2 = item.text(0)
+            strType1 = item.parent().text(0)
         dlg.setModal(True)
         dlg.exec_()
 
+    #返回当前选择的物品id,用于删除,修改物品信息
     def __get_selected_article_id(self):
         cur_index = self.ui.tableView.currentIndex()
         data = self.ui.tableView.model().index(cur_index.row(), 0).data()
@@ -304,7 +280,7 @@ class DlgArticle(QDialog):
         if not res[1]: return
         return  res[0]
 
-    '''修改物料信息到数据库'''
+    #'''修改物料信息到数据库'''
     def slotModifyArticle(self):
         #权限检查
         #if not ims.model.dbSysUser.g_current_user.is_enable_write_all():return
@@ -326,58 +302,15 @@ class DlgArticle(QDialog):
         else:
             QMessageBox.critical(self, u'出错了', u'删除操作执行出错')
     
-    #添加类别1    
-    def slotAddType1(self):
-        if not ims.model.dbSysUser.g_current_user.is_enable_write_all():return
-        #msg = QMessageBox.information(self, u'input', u'input')
-        text = QInputDialog.getText(self,
-                    QString(u"新增类别名" ),
-                    QString(u"请输入一个类别名称") ,
-                    QLineEdit.Normal);
-        if text[0] == '': return
-        newtype = ArticleType()
-        newtype.text = unicode(text[0])
-        #print newtype.text
-        newtype.parentid  = 0
-        if not dbArticleType().insert(newtype):
-            QMessageBox.warning(self, u'error', u'添加类别1失败')        
-        self.__initType1list()
-        self.__updateArticleTree()
-        
-    '''添加类别2'''    
-    def slotAddType2(self):
-        if not ims.model.dbSysUser.g_current_user.is_enable_write_all():return
 
-        '''先获取父类别id'''
-        res = self.ui.comboBox_type1.itemData(self.ui.comboBox_type1.currentIndex()).toInt()
-        if not res[1]:
-            print 'invadate combobox item data'
-            return 
-        parentid = int(res[0])
-        #msg = QMessageBox.information(self, u'input', u'input')
-        text = QInputDialog.getText(self,
-                    QString(u"新增类别名" ),
-                    QString(u"请输入一个类别名称") ,
-                    QLineEdit.Normal);
-        if text[0] == '':return
-        newtype = ArticleType()
-        newtype.text = unicode(text[0])
-        newtype.parentid = parentid
-        if not dbArticleType().insert(newtype):
-            QMessageBox.warning(self, u'doo', u'添加类别失败')        
-        self.__initType2list()
-        self.__updateArticleTree()
-
-
-
-    '''更新treeview控件'''    
+    #'''更新treeview控件'''
     def __updateArticleTree(self):
         strListHeader = QStringList()
         strListHeader.append(u'分类/型号')
         self.ui.treeWidget.setHeaderLabels(strListHeader)
         self.ui.treeWidget.clear()
         listTypes1 = dbArticleType().getType1() 
-        '''插入类别1'''       
+        #'''插入类别1'''
         for t1 in listTypes1:
             item = QTreeWidgetItem()
             #print t1
@@ -386,7 +319,7 @@ class DlgArticle(QDialog):
             item.setData(0, Qt.UserRole+1, 1)            
             listType2 = dbArticleType().getType2(t1.id)
             self.ui.treeWidget.addTopLevelItem(item)
-            '''插入类别2 '''
+            #'''插入类别2 '''
             for t2 in listType2:
                 #print '-',t2.text
                 item2 = QTreeWidgetItem()

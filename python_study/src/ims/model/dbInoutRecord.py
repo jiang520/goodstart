@@ -5,7 +5,7 @@ Created on 2013-9-29
 @author: Administrator
 '''
 from dbActicleIMS import dbActicleIMS
-from ims import dbClient
+from ims.model.dbClient import *
 from ims.model.dbArticle import dbArticle
 
 

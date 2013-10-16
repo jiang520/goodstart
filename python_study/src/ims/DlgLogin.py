@@ -16,7 +16,7 @@ class DlgLogin(QDialog):
     '''
     classdocs
     '''
-    def __init__(self,parent, bUsedForChooseClient=False):
+    def __init__(self,parent=None, bUsedForChooseClient=False):
         super(QDialog,self).__init__(parent)
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
@@ -25,7 +25,7 @@ class DlgLogin(QDialog):
         #self.ui.commandLinkButton_register.clicked.connect(self.slotRegister)
         self.ui.pushButton_load.clicked.connect(self.slotLogin)
         #self.setStyleSheet('backgroud-image:images/bkgnd.jpg')
-        self.setStyleSheet("QDialog{ border-image : url('images/bkgnd.jpg')}" );
+        self.setStyleSheet(u"QDialog{ border-image : url('images/bkgnd.jpg')}" );
         self.setFixedSize(500, 320)
 
     #初始化用户名列表
@@ -59,7 +59,7 @@ class DlgLogin(QDialog):
         userinfo.password = strPass
         res = dbSysUser().isValidUser(userinfo)
         if not res:
-            QMessageBox.critical(self, 'info', u'帐户或密码输误错误')
+            QMessageBox.critical(self, u'info', u'帐户或密码输误错误')
             self.ui.lineEdit_pass.setFocus()
         else:
             ims.model.dbSysUser.g_current_user = dbSysUser().get_user_by_username(userinfo.username)

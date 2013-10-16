@@ -82,7 +82,7 @@
        <item>
         <widget class="QPushButton" name="pushButton_export">
          <property name="text">
-          <string>退出</string>
+          <string>导出</string>
          </property>
         </widget>
        </item>

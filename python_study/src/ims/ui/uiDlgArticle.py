@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'DlgArticle.ui'
 #
-# Created: Wed Oct 16 13:43:05 2013
+# Created: Wed Oct 16 16:58:05 2013
 #      by: PyQt4 UI code generator 4.10.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -82,5 +82,5 @@ class Ui_Dialog(object):
         self.pushButton_add.setText(_translate("Dialog", "新增物品", None))
         self.pushButton_ok.setText(_translate("Dialog", "修改", None))
         self.pushButton_2.setText(_translate("Dialog", "删除", None))
-        self.pushButton_export.setText(_translate("Dialog", "退出", None))
+        self.pushButton_export.setText(_translate("Dialog", "导出", None))
 
