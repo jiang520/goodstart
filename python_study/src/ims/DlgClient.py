@@ -25,7 +25,7 @@ class DlgClient(QDialog):
         self.resize(600,400)
         self.tableView = self.ui.tableView
         self.tableView.setSortingEnabled(True)
-        self.__initTableView()  
+        self.__initTableView()
         self.ui.pushButton_add.clicked.connect(self.slotAddClient)
         self.ui.pushButton_modify.clicked.connect(self.slotModifyClient)
         self.ui.pushButton_del.clicked.connect(self.slotDeleteClient)

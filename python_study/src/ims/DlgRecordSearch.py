@@ -32,6 +32,7 @@ class DlgRecordSearch(QDialog):
         self.__articleid = None
         self.__initRecordTable()
         self.ui.dateEdit_end.setDate(QDate.currentDate())
+        self.ui.pushButton_apply.setDefault(True)
         self.ui.pushButton_apply.clicked.connect(self.slotApplySearch)
         self.ui.pushButton_reset.clicked.connect(self.slotResetSearch)
         self.ui.pushButton_export.clicked.connect(self.slotExport)

@@ -22,6 +22,7 @@ class DlgLogin(QDialog):
         self.ui.setupUi(self)
         self.setWindowTitle(u'ª∂”≠ π”√')
         self.__initUserNameList()
+        self.ui.pushButton_load.setDefault(True)
         #self.ui.commandLinkButton_register.clicked.connect(self.slotRegister)
         self.ui.pushButton_load.clicked.connect(self.slotLogin)
         #self.setStyleSheet('backgroud-image:images/bkgnd.jpg')
