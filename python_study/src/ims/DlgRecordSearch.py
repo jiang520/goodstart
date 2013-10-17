@@ -144,9 +144,9 @@ class DlgRecordSearch(QDialog):
                 model.setItem(i, 5, QStandardItem(QString(u'%s'%articleInfo.unit )))
             model.setItem(i, 2, QStandardItem(QString(u'%s'%item.time)))
             model.setItem(i, 3, QStandardItem(QString( item.count < 0  and u'出库' or u'入库')))
-            model.setItem(i, 4, QStandardItem(QString(str(item.count))))
-            model.setItem(i, 6, QStandardItem(QString(str(item.price))))
-            model.setItem(i, 7, QStandardItem(QString(u'%f'%(item.count*item.price))))
+            model.setItem(i, 4, QStandardItem(QString(u'%.2f'%item.count)))
+            model.setItem(i, 6, QStandardItem(QString(u'%.2f'%item.price)))
+            model.setItem(i, 7, QStandardItem(QString(u'%.2f'%(item.count*item.price))))
             model.setItem(i, 8, QStandardItem(QString(item.number)))
             model.setItem(i, 9, QStandardItem(QString(item.detail)))
             #获取客户信息

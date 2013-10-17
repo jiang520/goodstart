@@ -21,7 +21,6 @@ class DlgRecordModify(QDialog):
         '''
         Constructor
         '''
-
         super(QDialog,self).__init__(parent)
         self.__client = None
         self.ui = Ui_Dialog()
@@ -75,7 +74,7 @@ class DlgRecordModify(QDialog):
         else:
             self.ui.lineEdit_articlename.setText('')
         self.ui.lineEdit_count.setText('%f'%abs(oldRecord.count))
-        self.ui.lineEdit_price.setText('%f'%oldRecord.price)
+        self.ui.lineEdit_price.setText('%.2f'%oldRecord.price)
         self.ui.textEdit_detail.setText(oldRecord.detail)
         self.ui.lineEdit_number.setText(QString(oldRecord.number))
         #客户信息初始值
@@ -95,26 +94,41 @@ class DlgRecordModify(QDialog):
             date = QDate(int(dateStrList[0]), int(dateStrList[1]), int(dateStrList[2]))
             self.ui.dateEdit.setDate(date)
 
+    #修正进出货信息信息
     def slotModifyRecord(self):
         record = InOutRecord()
         record.id = self.__oldRecord.id
-        if self.__article != None:
-            record.articleid = self.__article.id
-            record.model     = self.__article.model
-        else:
-            record.articleid = self.__oldRecord.articleid
-            record.model     = self.__oldRecord.model
-        record.count     = float(self.ui.lineEdit_count.text())
-        record.detail    = u'%s'%self.ui.textEdit_detail.toPlainText()
-        record.price     = float(self.ui.lineEdit_price.text())
-        record.time      = self.ui.dateEdit.text()
-        record.number    = u'%s'%self.ui.lineEdit_number.text()
-        if self.__client != None:
-            record.clientid = self.__client.id
+        #如果修改了物品id
+        if self.__article != None: record.articleid = self.__article.id
+        #如果修改了客户id
+        if self.__client != None: record.clientid = self.__client.id
+        #校样价格和数量输入是否正确
+        str_count = u'%s'%self.ui.lineEdit_count.text()
+        str_count = str_count.strip()
+        str_price = u'%s'%self.ui.lineEdit_price.text()
+        str_price = str_price.strip()
+        if str_count=='':
+            self.ui.label_tips.setText(u'''<span style='color:#ff0000'>未输入数量</span>''')
+            return
+        if str_price =='':
+            self.ui.label_tips.setText(u'''<span style='color:#ff0000'>未输入价格</span>''')
+            return
+        #进行数据转换
+        try:
+            record.count     = float(str_count)
+            record.price     = float(str_price)
+            record.detail    = u'%s'%self.ui.textEdit_detail.toPlainText()
+            record.time      = self.ui.dateEdit.text()
+            record.number    = u'%s'%self.ui.lineEdit_number.text()
+        except Exception,e:
+            QMessageBox.critical(self, u'输入有误',u'数据输入格式错误,请修正后重试%s'%e)
+            return
+        #提交到数据库进行更改
         if not dbInOutRecord().modify(record):
             QMessageBox.critical(self, u'error', u'更新出入库记录失败,请重试')
         else:
             self.accept()
+
 if __name__ == '__main__':
     appp = QApplication(sys.argv)
     window = DlgRecordModify(None)

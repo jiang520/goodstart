@@ -197,18 +197,32 @@ class DlgInOutArticle(QDialog):
         record = InOutRecord()
         record.articleid = self.__article.id
         record.model = self.__article.model
-        record.count = float(self.ui.lineEdit_count.text())
-        '''如果是出货'''
+        str_count = u'%s'%self.ui.lineEdit_count.text()
+        str_count = str_count.strip()
+        if str_count=='':
+            self.ui.label_tips.setText(u'''<span style='color:#ff0000'>未输入数量</span>''')
+            return
+        str_price = u'%s'%self.ui.comboBox_price.currentText()
+        str_price = str_price.strip()
+        if str_price == '':
+            self.ui.label_tips.setText(u'''<span style='color:#ff0000'>未输入价格</span>''')
+            return
+        try:
+            record.count = float(str_count)
+            record.price  = float(str_price)
+            record.detail = u'%s'%self.ui.textEdit_detail.toPlainText()
+            record.time = self.ui.dateEdit.text()
+        except Exception,e:
+            QMessageBox.critical(self, u'error', u'数据转换出错,请检查输入后重试')
+            return
+        #'''如果是出货,则检查是否超出库存
         if self.ui.radioButton_out.isChecked():
             record.count = -record.count
-            '''检查库存和出货量'''
+            #'''检查库存和出货量'''
             remainCount = float(self.ui.lineEdit_remain.text())
             if remainCount <= 0 or record.count < -remainCount:
                 self.ui.label_tips.setText(u'''<span style='color:#ff0000'>出货数量超出库存</span>''')
                 return
-        record.detail = u'%s'%self.ui.textEdit_detail.toPlainText()
-        record.price  = float(self.ui.comboBox_price.currentText())
-        record.time = self.ui.dateEdit.text()
         if self.__client != None:
             record.clientid = self.__client.id
         '''检查是否已有同类物品(同id,同价格的物品在列表中)'''
@@ -255,11 +269,11 @@ class DlgInOutArticle(QDialog):
         model = QStandardItemModel(len(self.__recordList), 5, self)
         i = 0
         for record in self.__recordList:
-            model.setItem(i, 0, QStandardItem('%d'%record.articleid))
-            model.setItem(i, 1, QStandardItem(record.model))
-            model.setItem(i, 2, QStandardItem('%f'%record.count))
-            model.setItem(i, 3, QStandardItem('%f'%record.price))
-            model.setItem(i, 4, QStandardItem(record.detail))
+            model.setItem(i, 0, QStandardItem(u'%d'%record.articleid))
+            model.setItem(i, 1, QStandardItem(u'%s'%record.model))
+            model.setItem(i, 2, QStandardItem(u'%.2f'%record.count))
+            model.setItem(i, 3, QStandardItem(u'%.2f'%record.price))
+            model.setItem(i, 4, QStandardItem(u'%s'%record.detail))
             i = i+1  
         self.ui.tableView.setModel(model)
         '''设置表格表头'''

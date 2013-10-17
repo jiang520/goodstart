@@ -84,9 +84,10 @@ class DlgStock(QDialog):
                 model.setItem(row, 1, QStandardItem(QString(type_str[0])) )
                 model.setItem(row, 2, QStandardItem(QString(type_str[1] )) )
             model.setItem(row, 3, QStandardItem(QString(item.article.model )) )
-            model.setItem(row, 4, QStandardItem(QString('%f'%item.remainCount) ) )
+            model.setItem(row, 4, QStandardItem(QString(u'%.2f'%item.remainCount) ) )
+            #最新单价可能为空
             lastPrice = dbRecord.getLastUnitPrice(item.article.id)
-            model.setItem(row, 5, QStandardItem(QString( lastPrice and u'%f'%lastPrice or u'' ) ))
+            model.setItem(row, 5, QStandardItem(QString( lastPrice and u'%.2f'%lastPrice or u'' ) ))
             model.setItem(row, 6, QStandardItem(QString(item.article.packaging )) )
             model.setItem(row, 7, QStandardItem(QString(item.article.pingpai )) )
             model.setItem(row, 8, QStandardItem(QString(item.article.detail )) )
