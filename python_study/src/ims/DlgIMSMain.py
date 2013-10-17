@@ -120,9 +120,6 @@ class DlgIMSMain(QMainWindow):
         self.action_backup  = QAction(QIcon("images/timezone.png"), u'备份数据库',self)
         self.action_chart   = QAction(QIcon("images/chart.png"), u"统计曲线", self)
         self.action_exit    = QAction(QIcon("images/Restricted 1.png"),u'退出系统', self)
-        self.action_export_remain = QAction(u'导出库存列表',self)
-        self.action_export_articl = QAction(u'导出物品列表',self)
-        self.action_export_record = QAction(u'导出出库库记录列表', self)
         self.action_about         = QAction(u'关于', self)
         self.action_change_pass   = QAction(u'修改密码', self)
         self.action_admin         = QAction(u'帐户管理', self)
@@ -134,9 +131,6 @@ class DlgIMSMain(QMainWindow):
         self.action_article.triggered.connect(self.slotArticle)
         self.action_about.triggered.connect(self.slotAbout)
         self.action_backup.triggered.connect(self.slotBackup)
-
-        self.action_export_remain.triggered.connect(self.slotExportRemain)
-        self.action_export_record.triggered.connect(self.slotExportRecord)
         self.action_change_pass.triggered.connect(self.slotChangePassword)
         self.action_admin.triggered.connect(self.slotAdmin)
 
@@ -146,11 +140,6 @@ class DlgIMSMain(QMainWindow):
         menufile.addAction(self.action_client)
         menufile.addSeparator()
         menufile.addAction(self.action_exit)
-
-        menuTools = QMenu(u'数据转换工具', self)
-        menuTools.addAction(self.action_export_remain)
-        menuTools.addAction(self.action_export_articl)
-        menuTools.addAction(self.action_export_record)
 
         menuUser = QMenu(u'帐户设置',self)
         menuUser.addAction(self.action_change_pass)
@@ -164,7 +153,6 @@ class DlgIMSMain(QMainWindow):
         menuSystem.addAction(QAction(u'保存登陆密码',self))
 
         menubar.addMenu(menufile)
-        menubar.addMenu(menuTools)
         menubar.addMenu(menuUser)
         menubar.addMenu(menuSystem)
         menubar.addAction(self.action_about)

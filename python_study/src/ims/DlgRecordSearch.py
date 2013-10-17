@@ -176,6 +176,8 @@ class DlgRecordSearch(QDialog):
     def slotResetSearch(self):
         self.ui.checkBox_date.setChecked(False)
         self.ui.checkBox_number.setChecked(False)
+        self.ui.checkBox_inout.setChecked(False)
+        self.ui.checkBox_model.setChecked(False)
         self.slotApplySearch()
 
     #导出数据文件

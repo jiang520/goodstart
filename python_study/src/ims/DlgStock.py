@@ -56,7 +56,8 @@ class DlgStock(QDialog):
         self.__updateArticleCountList()
 
     def slotReset(self):
-        pass
+        self.ui.checkBox.setChecked(False)
+        self.__updateArticleCountList()
 
     def setArticleIdFilter(self, article_id):
         self.__article_id = article_id

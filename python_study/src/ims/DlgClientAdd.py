@@ -12,6 +12,7 @@ from ims.ui.uiDlgClientAdd import *
 from PyQt4.QtGui import *
 from ims.model.dbClient import *
 from ims.ui import uiDlgClientAdd
+from ims.model.SysConfigFile import *
 class DlgClientAdd(QDialog):
     __oldclientInfo = None
 
@@ -53,12 +54,13 @@ class DlgClientAdd(QDialog):
         #校样客户信息是否合法,客户姓名必须不能为空
         client.name = client.name.lstrip()
         client.name = client.name.rstrip()
-
+        #添加客户类型
+        g_configfile.addClientTypes(client.type)
+        #客户名称不能为空
         if client.name == '':
             QMessageBox.critical(self, u'error', u'公司名称/单位名称不能为空')
             self.ui.lineEdit_name.setFocus()
             return
-
         if self.__oldclientInfo == None:
             #添加客户信息'''
             if not dbClient().insert(client):

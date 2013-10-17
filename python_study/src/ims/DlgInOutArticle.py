@@ -204,9 +204,8 @@ class DlgInOutArticle(QDialog):
             return
         str_price = u'%s'%self.ui.comboBox_price.currentText()
         str_price = str_price.strip()
-        if str_price == '':
-            self.ui.label_tips.setText(u'''<span style='color:#ff0000'>未输入价格</span>''')
-            return
+        #无价格时也允许录入,默认为0
+        if str_price == '': str_price = u'0.0'
         try:
             record.count = float(str_count)
             record.price  = float(str_price)
@@ -257,9 +256,9 @@ class DlgInOutArticle(QDialog):
             rec.number = number
                         
         if not dbInOutRecord().addRecords(self.__recordList):
-            QMessageBox.warning(self, u'error', u'入库失败,请重新再试')
+            QMessageBox.critical(self, u'出错了', u'入库失败,请重新再试')
         else:
-            QMessageBox.information(self, u'error', u'库存记录已更新')
+            QMessageBox.information(self, u'操作提示', u'库存记录已更新')
             self.__recordList = []
             self.slotUpdateList()
     '''

@@ -10,9 +10,9 @@ from PyQt4.QtGui import *
 from ims.DlgIMSMain import DlgIMSMain
 from ims.DlgLogin import *
 from ims.model.dbActicleIMS import *
+from ims.model.SysConfigFile import g_configfile
 import ims
-
-
+import os
  #主函数
 if __name__ == '__main__':
     appp = QApplication(sys.argv)
@@ -22,6 +22,13 @@ if __name__ == '__main__':
     if dbActicleIMS.getInstance().getConnection() is None:
         QMessageBox.critical(None, u'Error', '数据库连接错误')
         sys.exit(0)
+    #初始化设置配置文件路径
+    g_configfile.setFilePath('%s\\config.ini'%os.getcwd())
+    g_configfile.addUserName('admin')
+    g_configfile.addUserName('jiang')
+    g_configfile.addClientTypes('供货商')
+    g_configfile.addClientTypes('一级经销商')
+    g_configfile.addClientTypes('医院')
 
     #显示主窗口
     window = DlgIMSMain(None)

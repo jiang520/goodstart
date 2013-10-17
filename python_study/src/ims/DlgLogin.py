@@ -8,10 +8,10 @@ Created on 2013-9-27
 from PyQt4.QtGui import *
 import sys
 from ims.model.dbSysUser import *
+from ims.model.SysConfigFile import *
 from ims.ui.uiDlgLogin import *
 import ims
-from PyQt4.QtCore import *
-from ims.model.dbClient import *
+
 class DlgLogin(QDialog):
     '''
     classdocs
@@ -23,9 +23,9 @@ class DlgLogin(QDialog):
         self.setWindowTitle(u'ª∂”≠ π”√')
         self.__initUserNameList()
         self.ui.pushButton_load.setDefault(True)
+        self.ui.lineEdit_pass.setEchoMode(QLineEdit.Password)
         #self.ui.commandLinkButton_register.clicked.connect(self.slotRegister)
         self.ui.pushButton_load.clicked.connect(self.slotLogin)
-        #self.setStyleSheet('backgroud-image:images/bkgnd.jpg')
         self.setStyleSheet(u"QDialog{ border-image : url('images/bkgnd.jpg')}" );
         self.setFixedSize(500, 320)
 
@@ -38,7 +38,7 @@ class DlgLogin(QDialog):
         self.ui.comboBox_username.setFont(font)
         self.ui.lineEdit_pass.setFont(font)
 
-        usernames = [u'admin',u'jiang',u'hou']
+        usernames = g_configfile.getUserList()
         for name in usernames:
             self.ui.comboBox_username.insertItem(0, name)
         self.ui.lineEdit_pass.setText(u'5950ut')
@@ -58,6 +58,7 @@ class DlgLogin(QDialog):
         userinfo = SysUser()
         userinfo.username = strUserName
         userinfo.password = strPass
+        g_configfile.addUserName(userinfo.username)
         res = dbSysUser().isValidUser(userinfo)
         if not res:
             QMessageBox.critical(self, u'info', u'’ ªßªÚ√‹¬Î ‰ŒÛ¥ÌŒÛ')
