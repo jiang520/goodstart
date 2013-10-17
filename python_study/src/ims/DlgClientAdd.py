@@ -24,7 +24,7 @@ class DlgClientAdd(QDialog):
         self.ui.pushButton_cancel.clicked.connect(self.__slotCancel)
         self.ui.pushButton_ok.clicked.connect(self.__slotOk)
         #初始化客户类型列表
-        client_type_list = [u'芯片供货商',u'经销商',u'OEM客户',u'技术外包客户',u'医院',u'政府机关']
+        client_type_list = g_configfile.getClientTypesu()
         for name in client_type_list:  self.ui.comboBox_clienttype.addItem(name)
 
         #如果是修改客户信息,则先置初值

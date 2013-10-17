@@ -24,6 +24,8 @@ class DlgLogin(QDialog):
         self.__initUserNameList()
         self.ui.pushButton_load.setDefault(True)
         self.ui.lineEdit_pass.setEchoMode(QLineEdit.Password)
+        self.ui.checkBox_autoload.hide()
+        self.ui.checkBox_recordpass.hide()
         #self.ui.commandLinkButton_register.clicked.connect(self.slotRegister)
         self.ui.pushButton_load.clicked.connect(self.slotLogin)
         self.setStyleSheet(u"QDialog{ border-image : url('images/bkgnd.jpg')}" );
