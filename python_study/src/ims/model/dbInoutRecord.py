@@ -46,16 +46,26 @@ class dbInOutRecord:
                   indexInterval=(0,100)):
         if indexInterval == None: return
         strFilterList = []
+        #货单号模糊匹配
         if None != strNumber:
             strFilterList.append(''' and recordid like '%%%s%%' '''%strNumber)
-        if None != dateInterval and dateInterval[0] != '' and dateInterval[1] != '':
-            strFilterList.append(''' and time >= '%s' and time <= '%s' '''%(dateInterval[0], dateInterval[1]))
+        #格式化时间字符串
+        if None != dateInterval:
+            date_start = self.__formatRecordTime(dateInterval[0])
+            date_end   =self.__formatRecordTime(dateInterval[1])
+            if dateInterval[0]==None: raise Exception("invdidate date time")
+            if dateInterval[1]==None: raise Exception("invdidate date time")
+            strFilterList.append(''' and DATETIME(time) >= DATETIME('%s') and DATETIME(time) <= DATETIME('%s') '''%(date_start,date_end))
+        #物品型号模糊匹配
         if None != strArticleModel:
             strFilterList.append( ''' and model like '%%%s%%' '''%strArticleModel )
+        #客户名称模糊匹配
         if None != strClientName:
             strFilterList.append( '''and tbClient.name like '%%%s%%' '''%strClientName)
+        #物品id匹配
         if None != articleid:
             strFilterList.append('''and articleid=%d'''%articleid)
+        #进行查询
         sql = '''SELECT tbInOutRecord.id, "articleid", "time", "count", "price", "recordid", tbInOutRecord.detail, "clientid"
                     FROM tbInOutRecord left join tbArticle on tbInOutRecord.articleid=tbArticle.id,
                                                  tbClient on tbClient.id = tbInOutRecord.clientid
@@ -117,6 +127,12 @@ class dbInOutRecord:
         
     def addRecords(self, recordlist):
         for record in recordlist:
+            #校样时间
+            record.time = self.__formatRecordTime(record.time)
+            if record.time is None:
+                print 'invalid record date '
+                return  False
+            #生成sql
             sql = '''insert into tbInOutRecord (
                         articleid,
                         time,
@@ -126,8 +142,8 @@ class dbInOutRecord:
                         clientid,
                         detail) values(
                         %d,'%s',%f,%f,'%s',%d,'%s')'''%(
-                          record.articleid,
-                          record.time,
+                        record.articleid,
+                        record.time,
                         record.count, 
                         record.price,
                         record.number,
@@ -138,8 +154,24 @@ class dbInOutRecord:
             con.execute(sql)
         con.commit()
         return True
-    
+    def __formatRecordTime(self, time_string):
+        try:
+            time_strs = time_string.split('/')
+            if len(time_strs)!= 3: return  None
+            year  = int(time_strs[0])
+            if year < 1970 or year > 3000: return  None
+            month = int(time_strs[1])
+            if month < 1 or month > 12: return None
+            day   = int(time_strs[2])
+            if day < 1 or day > 31: return None
+            return  '%04d-%02d-%02d'%(year,month,day)
+        except Exception, e:
+            print 'format record time failed: ',e
+            return  None
     def add(self, record):
+        record.time = self.__formatRecordTime(record.time)
+        print record.time
+        if record.time is None: return  False
         sql = '''insert into tbInOutRecord (
                         articleid,
                         time,
@@ -149,8 +181,8 @@ class dbInOutRecord:
                         clientid,
                         detail) values(
                         %d,'%s',%f,%f,'%s',%d,'%s')'''%(
-                          record.articleid,
-                          record.time,
+                        record.articleid,
+                        record.time,
                         record.count, 
                         record.price,
                         record.number,
@@ -162,6 +194,8 @@ class dbInOutRecord:
         con.commit()                
         
     def modify(self,record):
+        record.time = self.__formatRecordTime(record.time)
+        if record.time is None: return  False
         sql = '''update tbInOutRecord set 
                         articleid=%d,
                         time='%s',
@@ -203,6 +237,12 @@ class dbInOutRecord:
             return False
     
 if __name__ == '__main__':
+    db = dbInOutRecord()
+    recList = db.getRecord()
+    for rec in recList:
+        db.modify(rec)
+    '''
+
     record = InOutRecord()
     record.articleid = 3
     record.price = 1.0
@@ -213,3 +253,4 @@ if __name__ == '__main__':
     print dbInOutRecord().add(record)
     #print dbInOutRecord().modify(record)
     print dbInOutRecord().getRecord()
+    '''
