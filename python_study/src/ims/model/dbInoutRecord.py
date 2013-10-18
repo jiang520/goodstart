@@ -128,32 +128,23 @@ class dbInOutRecord:
     def addRecords(self, recordlist):
         for record in recordlist:
             #校样时间
-            record.time = self.__formatRecordTime(record.time)
-            if record.time is None:
-                print 'invalid record date '
+            time_formated = self.__formatRecordTime(record.time)
+            if time_formated is None:
+                raise Exception('invaidate record.time:%s->%s'%(record.time,time_formated))
                 return  False
+            record.time = time_formated
             #生成sql
-            sql = '''insert into tbInOutRecord (
-                        articleid,
-                        time,
-                        count,
-                        price,
-                        recordid,
-                        clientid,
-                        detail) values(
-                        %d,'%s',%f,%f,'%s',%d,'%s')'''%(
-                        record.articleid,
-                        record.time,
-                        record.count, 
-                        record.price,
-                        record.number,
-                        record.clientid,
-                        record.detail);
+            sql = '''insert into tbInOutRecord ( articleid, time, count, price, recordid, clientid, detail) values(
+                        %d,'%s',%f, %f,'%s', %d,'%s')'''%(record.articleid, record.time, record.count, record.price,
+                                                        record.number, record.clientid, record.detail);
             print sql
             con = dbActicleIMS.getInstance().getConnection()
             con.execute(sql)
         con.commit()
         return True
+
+
+    #将日期由2012/3/2格式化为2012/03/02
     def __formatRecordTime(self, time_string):
         try:
             time_strs = time_string.split('/')
@@ -238,10 +229,22 @@ class dbInOutRecord:
     
 if __name__ == '__main__':
     db = dbInOutRecord()
+    record  = InOutRecord()
+    record.time = '2013/24/5'
+    record.articleid=19
+    record.count=3
+    record.price=3
+    rl = [record,]
+    try:
+        db.addRecords(rl)
+    except Exception,e:
+        print e
+
+    '''
     recList = db.getRecord()
     for rec in recList:
         db.modify(rec)
-    '''
+
 
     record = InOutRecord()
     record.articleid = 3
