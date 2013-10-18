@@ -17,7 +17,8 @@ import os
 if __name__ == '__main__':
     appp = QApplication(sys.argv)
     appp.setApplicationName(u'UT库存管理系统')
-    appp.setWindowIcon(QIcon(u"images/14.png"))
+    appp.setApplicationVersion(u'0.4.0.0')
+    appp.setWindowIcon(QIcon(u"images/stock.png"))
     #检查数据库是否可连接
     if dbActicleIMS.getInstance().getConnection() is None:
         QMessageBox.critical(None, u'Error', '数据库连接错误')

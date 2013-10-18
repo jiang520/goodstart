@@ -14,10 +14,15 @@ if len(sys.argv) == 1:
 
 py2exe_options = {
         "includes":["sip",],
+        "dll_excludes": ["MSVCP90.dll"]
         }
 
 #生成安装包
-setup(windows=["__init__.py"],
+setup(windows=[{"script":"__init__.py",
+                "icon_resources":[(1,"images/stock.ico")]
+               }],
+      zipfile = None,
+      name = "UT库存管理系统",
       options={'py2exe':py2exe_options},
       #data_files=[("images", ["images//*.png"])]
 )
@@ -44,6 +49,7 @@ if curdir != '':
         shutil.copyfile(filename,  'dist/%s'%filename)
     shutil.move(curdir+u'\\dist\\__init__.exe', curdir+u'\\dist\\UT库存管理系统.exe')
     sys.exit(0)
+
     if not os.path.isdir(curdir+u'\\dist\\images'):
         os.mkdir(curdir+u'\\dist\\images')
     shutil.copytree(curdir+u'\\images', curdir+u'\\dist\\images')
