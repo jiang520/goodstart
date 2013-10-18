@@ -92,7 +92,7 @@ class DlgInOutArticle(QDialog):
         if event.key() == Qt.Key_Delete:
             self.slotDeleteRecordItem()
             return
-        return QDialog.keyPressEvent(event)
+        return QDialog.keyPressEvent(self,event)
     '''
     从货单中删除项目
     '''
@@ -115,16 +115,16 @@ class DlgInOutArticle(QDialog):
     def slotUpdateTotal(self):
         try:
             count = float(self.ui.lineEdit_count.text())
-            price = float(self.ui.lineEdit_price.text())
+            price = float(self.ui.comboBox_price.currentText())
             total = count*price
-            self.ui.lineEdit.setText('%f'%total)
+            self.ui.lineEdit.setText(u'%f'%total)
         except:
-            self.ui.lineEdit.setText('')
+            self.ui.lineEdit.setText(u'')
     '''重置输入'''
     def slotReset(self):
-        self.ui.lineEdit_articlename.setText('')
-        self.ui.lineEdit_count.setText('1.0')
-        self.ui.lineEdit_price.setText('1.0')
+        self.ui.lineEdit_articlename.setText(u'')
+        self.ui.lineEdit_count.setText(u'1.0')
+        self.ui.comboBox_price.setEditText(u'1.0')
 
     '''弹出窗口让用户选择物品,并显示库存数量'''
     def slotArticleMs(self):

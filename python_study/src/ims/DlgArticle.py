@@ -159,7 +159,7 @@ class DlgArticle(QDialog):
         newtype.parentid = parentid
         #执行数据库操作
         if not dbArticleType().insert(newtype):
-            QMessageBox.critical(u'出错了',u'添加类别失败,请重试')
+            QMessageBox.critical(self, u'出错了',u'添加类别失败,请重试')
         else:
             self.__updateArticleTree()
 
@@ -181,7 +181,7 @@ class DlgArticle(QDialog):
         newtype.parentid = parentid
         #执行数据库操作
         if not dbArticleType().insert(newtype):
-            QMessageBox.critical(u'出错了',u'添加类别失败,请重试')
+            QMessageBox.critical(self, u'出错了',u'添加类别失败,请重试')
         else:
             self.__updateArticleTree()
 

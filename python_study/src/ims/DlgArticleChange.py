@@ -53,23 +53,6 @@ class DlgArticleChange(QDialog):
         self.__initType1list()
         self.__initType2list()
 
-    '''添加物品类型1/2'''
-    def __AddType(self, parentid):
-        text = QInputDialog.getText(self,
-                    QString(u"新增类别名" ),
-                    QString(u"请输入一个类别名称") ,
-                    QLineEdit.Normal)
-        if not text[1]: return        
-        newtype = ArticleType()
-        newtype.parentid = parentid
-        newtype.text = text[0]
-        if dbArticleType().insert(newtype):
-            self.__updateArticleTree()
-        else:
-            QMessageBox.critical(self, u'error', u'添加失败')
-
-
-
         
     '''修改物料信息到数据库'''
     def slotOk(self):
@@ -129,7 +112,6 @@ class DlgArticleChange(QDialog):
         if not dbArticleType().insert(newtype):
             QMessageBox.warning(self, u'error', u'添加类别1失败')        
         self.__initType1list()
-        self.__updateArticleTree()
         
     '''添加类别2'''    
     def slotAddType2(self):
@@ -153,7 +135,6 @@ class DlgArticleChange(QDialog):
         if not dbArticleType().insert(newtype):
             QMessageBox.warning(self, u'doo', u'添加类别失败')        
         self.__initType2list()
-        self.__updateArticleTree()
     
     '''更新类别1的列表'''    
     def __initType1list(self):
