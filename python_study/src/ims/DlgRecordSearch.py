@@ -36,6 +36,9 @@ class DlgRecordSearch(QDialog):
         self.ui.pushButton_apply.clicked.connect(self.slotApplySearch)
         self.ui.pushButton_reset.clicked.connect(self.slotResetSearch)
         self.ui.pushButton_export.clicked.connect(self.slotExport)
+        #右键菜单事件
+        self.ui.tableView.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.ui.tableView.customContextMenuRequested.connect(self.slotRightMenu);
         
         self.ui.tableView.setEditTriggers(QTableWidget.NoEditTriggers)
         self.ui.tableView.setSelectionBehavior(QTableWidget.SelectRows)
@@ -44,6 +47,19 @@ class DlgRecordSearch(QDialog):
         self.ui.tableView.doubleClicked.connect(self.slotModifyRecord)
         self.ui.tableView.setSortingEnabled(True)
         
+    def slotRightMenu(self):
+        menu = QMenu()
+        action_export = QAction(u'导出', self)
+        action_modify = QAction(u'修改', self)
+        action_del = QAction(u'删除', self)
+        action_del.triggered.connect(self.slotDelRecord)
+        action_export.triggered.connect(self.slotExport)
+        action_modify.triggered.connect(self.slotModifyRecord)
+        menu.addAction(action_modify)
+        menu.addAction(action_del)
+        menu.addSeparator()
+        menu.addAction(action_export)
+        menu.exec_(QCursor.pos())
 
     #修改记录
     def slotModifyRecord(self):

@@ -36,7 +36,11 @@ class DlgClient(QDialog):
             self.tableView.doubleClicked.connect(self.slotChooseClient)
         else:
             self.setWindowTitle(u'客户信息(双击可修改)')
-            self.ui.tableView.doubleClicked.connect(self.slotModifyClient)                      
+            self.ui.tableView.doubleClicked.connect(self.slotModifyClient)
+        #设置右键菜单事件
+        #self.ui.tableView.clicked.connect(self.slotRightMenu)
+        self.ui.tableView.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.ui.tableView.customContextMenuRequested.connect(self.slotRightMenu)
         self.updateTableWidget()
         self.ui.tableView.setFocus()
 
@@ -53,6 +57,24 @@ class DlgClient(QDialog):
             self.slotDeleteClient()
             return
         return QDialog.keyPressEvent(self, event) 
+
+    def slotRightMenu(self):
+        menu = QMenu()
+        action_export = QAction(u'导出', self)
+        action_modify = QAction(u'修改', self)
+        action_del = QAction(u'删除', self)
+        action_del.triggered.connect(self.slotDeleteClient)
+        action_export.triggered.connect(self.slotExportClient)
+        action_modify.triggered.connect(self.slotModifyClient)
+        gUser = ims.model.dbSysUser.g_current_user
+        if gUser==None or  not gUser.is_enable_write_all():
+            action_del.setEnabled(False)
+            action_modify.setEnabled(False)
+        menu.addAction(action_modify)
+        menu.addAction(action_del)
+        menu.addSeparator()
+        menu.addAction(action_export)
+        menu.exec_(QCursor.pos())
 
     def slotExportClient(self):
         import FunctionTools
