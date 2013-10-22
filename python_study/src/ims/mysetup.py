@@ -21,9 +21,12 @@ py2exe_options = {
 setup(windows=[{"script":"__init__.py",
                 "icon_resources":[(1,"images/stock.ico")]
                }],
-      zipfile = None,
-      name = "UT库存管理系统",
-      options={'py2exe':py2exe_options},
+      version     = u"0.4.0",
+      description = u"UT库存管理系统",
+      right       = u'版权归ericwill所有',
+      name        = u"UT库存管理系统",
+      zipfile     = None,
+      options     = {'py2exe':py2exe_options},
       #data_files=[("images", ["images//*.png"])]
 )
 
