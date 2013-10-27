@@ -10,8 +10,7 @@ from PyQt4.QtCore import *
 import sys
 import ims
 from ims.FunctionTools import *
-from ims.ui.uiDlgRecordSearch import *
-from ims.ui import uiDlgRecordSearch
+from ims.ui.uiDlgRecordSearch import Ui_Dialog
 from ims.model.dbInoutRecord import *
 from ims.DlgRecordModify import DlgRecordModify
 
@@ -26,19 +25,19 @@ class DlgRecordSearch(QDialog):
 
     def __init__(self,parent=None):
         super(DlgRecordSearch, self).__init__(parent)
-        self.ui = uiDlgRecordSearch.Ui_Dialog()
+        self.ui = Ui_Dialog()
         self.ui.setupUi(self)
 
         self.__articleid = None
         self.__initRecordTable()
-        self.ui.dateEdit_end.setDate(QDate.currentDate())
+        self.ui.dateEdit_end.setDate(QDate().currentDate())
         self.ui.pushButton_apply.setDefault(True)
         self.ui.pushButton_apply.clicked.connect(self.slotApplySearch)
         self.ui.pushButton_reset.clicked.connect(self.slotResetSearch)
         self.ui.pushButton_export.clicked.connect(self.slotExport)
         #右键菜单事件
         self.ui.tableView.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.ui.tableView.customContextMenuRequested.connect(self.slotRightMenu);
+        self.ui.tableView.customContextMenuRequested.connect(self.slotRightMenu)
         
         self.ui.tableView.setEditTriggers(QTableWidget.NoEditTriggers)
         self.ui.tableView.setSelectionBehavior(QTableWidget.SelectRows)
@@ -48,6 +47,8 @@ class DlgRecordSearch(QDialog):
         self.ui.tableView.setSortingEnabled(True)
         
     def slotRightMenu(self):
+        model =  self.ui.tableView.model()
+        if model.rowCount() <= 0:return
         menu = QMenu()
         action_export = QAction(u'导出', self)
         action_modify = QAction(u'修改', self)

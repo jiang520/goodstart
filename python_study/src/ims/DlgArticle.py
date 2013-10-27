@@ -5,7 +5,7 @@ Created on 2013-9-27
 @author: Administrator
 '''
 from ims.DlgArticleChange import DlgArticleChange
-from ui import uiDlgArticle
+from ui.uiDlgArticle import Ui_Dialog
 import sys
 import ims
 from PyQt4.QtCore import *
@@ -13,17 +13,15 @@ from PyQt4.QtGui import *
 from ims.model.dbArticleType import dbArticleType
 from ims.model.dbArticle import dbArticle
 from ims.model.dbArticleType import ArticleType
-from ims.model.dbArticle import Article
-from ims.ui.uiDlgArticle import Ui_Dialog
-class DlgArticle(QDialog):   
+class DlgArticle(QDialog):
     """
 
     """
-    '''
-    @note初始化窗口,物品选择窗口时双击直接选中物品
-    @param bForChoose 指定此窗口是否是物品选择窗口
-    '''
     def __init__(self, parent=None,  bForChoose=False):
+        '''
+        @note初始化窗口,物品选择窗口时双击直接选中物品
+        @param bForChoose 指定此窗口是否是物品选择窗口
+        '''
         super(DlgArticle,self).__init__(parent)
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
@@ -46,7 +44,7 @@ class DlgArticle(QDialog):
         self.ui.treeWidget.itemPressed[QTreeWidgetItem, int].connect(self.slotContextMenu)
         self.ui.treeWidget.setStyleSheet( "QTreeView::item:hover{background-color:rgb(0,255,0,50)} "
                                           "QTreeView:item{border-bottom:1px solid #999999;border-right:1px solid #999999}"
-                                          "QTreeView::item:selected{background-color:rgb(255,0,0,100)}");
+                                          "QTreeView::item:selected{background-color:rgb(255,0,0,100)}")
 
         self.ui.tableView.setContextMenuPolicy(Qt.CustomContextMenu)
         self.ui.tableView.customContextMenuRequested.connect(self.slotTableMenu)
@@ -57,13 +55,13 @@ class DlgArticle(QDialog):
         self.__updateArticleTree()
         self.__updateArticleList()
 
-        '''如果此窗口用于选择物品'''
+        #'''如果此窗口用于选择物品'''
         if bForChoose:
-            '''初始即展开所有项目'''
+            #'''初始即展开所有项目'''
             self.ui.treeWidget.expandAll()
-            '''双击选中'''
+            #'''双击选中'''
             self.ui.treeWidget.doubleClicked.connect(self.slotChoosed)
-            '''或者点击ok按钮进行选中'''
+            #'''或者点击ok按钮进行选中'''
             self.ui.pushButton_ok.show()
             self.ui.pushButton_ok.clicked.connect(self.slotChoosed)
         else:
@@ -71,6 +69,8 @@ class DlgArticle(QDialog):
 
     #物品表格菜单,提供导出,修改,删除功能
     def slotTableMenu(self):
+        model = self.ui.tableView.model()
+        if model.rowCount() <= 0: return
         action_export = QAction(u'导出', self)
         action_del = QAction(u'删除', self)
         action_modify = QAction(u'修改', self)
@@ -87,9 +87,9 @@ class DlgArticle(QDialog):
         menu.addAction(action_del)
         menu.addSeparator()
         menu.addAction(action_export)
-        menu.exec_(QCursor.pos())
+        menu.exec_(QCursor().pos())
 
-    '''选中一项物品'''
+    #'''选中一项物品'''
     def slotChoosed(self):
         article_id = self.__get_selected_article_id()
         if article_id is None: return
@@ -101,7 +101,7 @@ class DlgArticle(QDialog):
         return  self.__articleSelected
         
 
-    '''右键弹出菜单'''
+    #'''右键弹出菜单'''
     def slotContextMenu(self, item, col):
         if qApp.mouseButtons() == Qt.LeftButton: return
         rightMenu = QMenu(u"right")
@@ -145,9 +145,9 @@ class DlgArticle(QDialog):
         rightMenu.addSeparator()
         rightMenu.addAction(action_refresh)
         #'''显示菜单'''
-        rightMenu.exec_(QCursor.pos()) 
+        rightMenu.exec_(QCursor().pos())
     
-    '''获取指定节点的 数据'''
+    #'''获取指定节点的 数据'''
     def __getItemIdDepth__(self,item):
         res = item.data(0, Qt.UserRole).toInt()
         if not res[1]: return None
@@ -414,7 +414,8 @@ if __name__ == '__main__':
     #ims.ui.ui2py.pyqt_ui_2_py()
     user = ims.model.dbSysUser.SysUser()
     user.usertype = u"管理员"
-    ims.model.dbSysUser.g_current_user = user
+    from ims.model.dbSysUser import g_current_user
+    g_current_user = user
     appp = QApplication(sys.argv)
     window = DlgArticle(None)
     window.setModal(True)
