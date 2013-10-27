@@ -30,7 +30,22 @@ class dbArticleType:
         if res is None: return  None
         return  res
 
-    '''查找大类信息列表'''
+    #根据类型名称查找类型信息
+    def getArticleTypeInfoByTypeName(self, name):
+        sql = '''select id,name,parentid from tbType where name='%s' '''%name
+        print sql
+        con = dbActicleIMS.getInstance().getConnection()
+        cursor = con.execute(sql)
+        if cursor is None: return  None
+        res = cursor.fetchone()
+        if res is None: return  None
+        typeinfo = ArticleType()
+        typeinfo.id = int(res[0])
+        typeinfo.text = res[1]
+        typeinfo.parentid=int(res[2])
+        return  typeinfo
+
+    #'''查找所有大类信息列表'''
     def getType1(self):
         sql = '''SELECT "id", "name", "parentid" from tbType where parentid=0''';
         con = dbActicleIMS.getInstance().getConnection()
@@ -44,7 +59,7 @@ class dbArticleType:
             liType.append(a)
         return liType
 
-    '''查找指定大类下的二级类型信息'''
+    #'''查找指定大类下的二级类型信息'''
     def getType2(self, parentid):
         sql = '''SELECT "id", "name", "parentid" from tbType where parentid=%d'''%parentid
         #print sql    
@@ -59,7 +74,7 @@ class dbArticleType:
             #print a.text
             liType.append(a)
         return liType
-    '''修改类型名称'''
+    #'''修改类型名称'''
     def rename(self, typeid, newname):
         if newname==None or newname == '': return False
         con = dbActicleIMS.getInstance().getConnection()

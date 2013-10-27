@@ -6,11 +6,14 @@ Created on 2013-9-27
 '''
 
 from PyQt4.QtGui import *
+from PyQt4.Qt import  *
 import sys
+from ims.DlgIMSMain import DlgIMSMain
 from ims.model.dbSysUser import *
 from ims.model.SysConfigFile import *
 from ims.ui.uiDlgLogin import *
 import ims
+from ims.model.SysConfigFile import g_configfile
 
 class DlgLogin(QDialog):
     '''
@@ -19,6 +22,7 @@ class DlgLogin(QDialog):
     def __init__(self,parent=None, bUsedForChooseClient=False):
         super(QDialog,self).__init__(parent)
         self.ui = Ui_Dialog()
+        #self.setWindowFlags(Qt.FramelessWindowHint)
         self.ui.setupUi(self)
         self.setWindowTitle(u'ª∂”≠ π”√')
         self.__initUserNameList()

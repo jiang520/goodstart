@@ -55,6 +55,9 @@ class DlgRecordSearch(QDialog):
         action_del.triggered.connect(self.slotDelRecord)
         action_export.triggered.connect(self.slotExport)
         action_modify.triggered.connect(self.slotModifyRecord)
+        if not ims.model.dbSysUser.g_current_user.is_enable_write_all():
+            action_del.setEnabled(False)
+            action_modify.setEnabled(False)
         menu.addAction(action_modify)
         menu.addAction(action_del)
         menu.addSeparator()

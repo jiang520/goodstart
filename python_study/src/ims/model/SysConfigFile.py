@@ -4,6 +4,7 @@ import ConfigParser
 class SysConfigFile:
     def __init__(self):
         self.__filepath = None
+        self.__config=None
 
     def setFilePath(self, path):
         self.__filepath = path

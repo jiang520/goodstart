@@ -1,10 +1,12 @@
 #encoding=gb2312
+from ims.model.dbArticleType import ArticleType, dbArticleType
 
 __author__ = 'jiang'
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 import xlwt
+import xlrd
 #'''导出指定的tablewiget的数据到文件中'''
 def ExportTableWidgetData(tableWidget, filepath):
     if filepath == None or len(filepath) <= 0: return
@@ -67,4 +69,79 @@ def ExportTableWidgetDataToExcel(tableWidget, filepath):
             workSheet.write(row+1, col, str2, style)
     book.save(filepath)
     return  True
+
+#导入文件
+def ImportArticleTable(filepath):
+    if filepath==None or len(filepath)==0: return  False
+    book = xlrd.open_workbook(filepath)
+    sheet = book.sheet_by_index(0)
+    if sheet is None: return  False
+    headers = ['型号','封装','类别','品牌','单位','备注']
+
+    for row in range(sheet.row()):
+        for col in range(sheet.col):
+            print sheet.cell(row,cel),','
+
+def ImportClientTalbe(filepath):
+    pass
+def ImportInoutRecord(filePath):
+    pass
+
+def ImportArticleType(filepath):
+    if filepath==None or len(filepath)==0: return  False
+    book = xlrd.open_workbook(filepath)
+    sheet = book.sheet_by_index(0)
+    if sheet is None: return  False
+    headers = ['类别']
+    if sheet.ncols!=0 or sheet.cell_value(0, 0)!='类别':
+        raise Exception("cols must be 1count and contain type'文件列数要求为1,并且只有一列<类别>")
+        return
+    type1set = set()
+    typeslist2 = []
+    for row in range(1, sheet.nrows):
+        for col in range(sheet.ncols):
+            print sheet.cell_value(row,col)
+            types = sheet.cell_value(row,col)
+            t1t2 = types.split('-')
+            if len(t1t2)!= 2:
+                raise Exception("invadate type")
+                return
+            if(t1t2[0]==''):
+                raise Exception("invadate type1")
+                return
+            type1set.add(t1t2[0])
+
+    db = dbArticleType()
+    for text in type1set:
+        typeinfo = ArticleType()
+        typeinfo.parentid = 0
+        typeinfo.text=text
+        db.insert(typeinfo)
+
+    for row in range(1,sheet.nrows):
+        for col in range(sheet.ncols):
+            print sheet.cell_value(row,col)
+            types = sheet.cell_value(row,col)
+            t1t2 = types.split('-')
+            if len(t1t2)!= 2: break
+            parent_type = db.getArticleTypeInfoByTypeName(t1t2[0])
+            if parent_type is None:
+                raise Exception("invadate parent type")
+                return
+            type = ArticleType()
+            type.parentid= parent_type.id
+            type.text=t1t2[1]
+            typeslist2.append(type)
+
+    for item in typeslist2:  db.insert(item)
+
+
+if __name__=="__main__":
+    filepath = "d:\\test.xls"
+    ImportArticleType('D:\\type.xlsx')
+    #ImportArticleTable(filepath)
+
+
+
+
 

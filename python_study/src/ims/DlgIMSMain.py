@@ -13,10 +13,6 @@ from ims.DlgRecordSearch import DlgRecordSearch
 from ims.DlgInOutArticle import *
 from ims.DlgStock import DlgStock
 from ims.model import dbSysUser
-from ims.model.dbInoutRecord import *
-from ims.model.dbArticleType import *
-from ims.model.dbArticle import *
-from ims.DlgLogin import DlgLogin
 import ims
 
 
@@ -24,12 +20,6 @@ class DlgIMSMain(QMainWindow):
     
     def __init__(self, parent=None):
         super(DlgIMSMain, self).__init__(None)
-        #检查用户登陆信息
-        window_login = DlgLogin(self)
-        window_login.setModal(True)
-        #取消登陆
-        if window_login.exec_() != QDialog.Accepted:
-            sys.exit(0)
         if ims.model.dbSysUser.g_current_user is None:
             sys.exit(0)
         self.setWindowTitle(u'ut库存管理系统--欢迎使用-%s'%ims.model.dbSysUser.g_current_user.username)

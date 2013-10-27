@@ -118,6 +118,9 @@ class DlgSysUserAdmin(QDialog):
             else:
                 QMessageBox.critical(self,u'error',u'Add failed')
         self.ui.tableView.setEnabled(True)
+        self.ui.pushButton_add.setEnabled(True)
+        self.ui.pushButton_modify.setEnabled(True)
+        self.ui.pushButton_del.setEnabled(True)
 
     #取消添加/修改用户信息
     def slotCancel(self):

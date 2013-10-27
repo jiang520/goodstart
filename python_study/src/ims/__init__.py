@@ -31,6 +31,11 @@ if __name__ == '__main__':
     g_configfile.addClientTypes('一级经销商')
     g_configfile.addClientTypes('医院')
 
+    #登录检查
+    dlg = DlgLogin(None)
+    dlg.setModal(True)
+    if dlg.exec_()!=QDialog.Accepted:
+        sys.exit(0)
     #显示主窗口
     window = DlgIMSMain(None)
     window.show()
