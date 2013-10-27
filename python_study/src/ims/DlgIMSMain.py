@@ -50,6 +50,7 @@ class DlgIMSMain(QMainWindow):
 
     def slotSelecteArticle(self):
         item = self.treeArticle.currentItem()
+        if item is None: return
         text = item.text(1)
         #print '=======id = ',text
         if text == '': return
@@ -188,8 +189,12 @@ class DlgIMSMain(QMainWindow):
         QMessageBox.information(self, u'info', u'已导出到%s'%filePath)
 
     def slotAbout(self):
-        QMessageBox.about(self,u'库存管理系统',
-                          u'''UT库存管理系统,基于python2.7和pyqt4.8构建,\n版权所有,欢迎使用''')
+        QMessageBox.about(self,u'库存管理系统',\
+                          u'''UT库存管理系统,基于python2.7和pyqt4.8构建,\
+                          \n版权所有,欢迎使用\
+                          \n欢迎反馈交流^_^\
+                          \nEmail: ericwill@163.com\
+                          \nQQ:    794345226''')
 
     def slotAdmin(self):
         res = QInputDialog.getText(self, u'系统管理', u'请输入管理员密码', QLineEdit.Password)
@@ -219,10 +224,6 @@ class DlgIMSMain(QMainWindow):
 
 
 
-    def slotChangePass(self):
-        pass
-    def slotLogout(self):
-        pass
 
     '''客户信息管理'''
     def slotDlgClient(self):
@@ -251,12 +252,12 @@ class DlgIMSMain(QMainWindow):
         self.__udpateArticleTreeView()
 
     def slotChangePassword(self):
-        res = QInputDialog.getText(self, u'请输入新密码', u'修改密码', QLineEdit.PasswordEchoOnEdit)
-        print '====res = ',res
+        res = QInputDialog.getText(self, u'请输入4位以上新密码', u'修改密码', QLineEdit.PasswordEchoOnEdit)
         if not res[1]: return
         cur_user = ims.model.dbSysUser.g_current_user
         new_password = u'%s'%res[0]
-
+        if len(new_password) < 4:
+            QMessageBox.critical(self, u'输入错误', u'密码长度不能小于4位')
         if not ims.model.dbSysUser.dbSysUser().modifyPassword(cur_user.username, new_password):
             QMessageBox.critical(self, u'error', u'修改密码失败')
         else:
